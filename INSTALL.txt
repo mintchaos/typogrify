@@ -1,0 +1,14 @@
+Thanks for downloading template_utils.
+
+To install it, run the following command inside this directory::
+
+    python setup.py install
+    
+Or simply move the typogrify folder into your python path.
+
+To use Typogrify in your django app, add it to your installed apps in 
+your settings.py.
+
+Note that this application requires Python 2.3 or later, and Django
+0.96 or later; you can obtain Python from http://www.python.org/ and
+Django from http://www.djangoproject.com/.
