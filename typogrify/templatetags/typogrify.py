@@ -105,7 +105,7 @@ def caps(text):
 
 def initial_quotes(text):
     """Wraps initial quotes in ``class="dquo"`` for double quotes or  
-    ``class="quo"`` for single quotes. Works in these block tags ``(h1-h6, p, li)``
+    ``class="quo"`` for single quotes. Works in these block tags ``(h1-h6, p, li, dt, dd)``
     and also accounts for potential opening inline elements ``a, em, strong, span, b, i``
     
     >>> initial_quotes('"With primes"')
@@ -119,7 +119,7 @@ def initial_quotes(text):
     >>> initial_quotes('&#8220;With smartypanted quotes&#8221;')
     '<span class="dquo">&#8220;</span>With smartypanted quotes&#8221;'
     """
-    quote_finder = re.compile(r"""((<(p|h[1-6]|li)[^>]*>|^)                    # start with an opening p, h1-6, li or the start of the string
+    quote_finder = re.compile(r"""((<(p|h[1-6]|li|dt|dd)[^>]*>|^)              # start with an opening p, h1-6, li, dd, dt or the start of the string
                                   \s*                                          # optional white space! 
                                   (<(a|em|span|strong|i|b)[^>]*>\s*)*)         # optional opening inline tags, with more optional white space for each.
                                   (("|&ldquo;|&\#8220;)|('|&lsquo;|&\#8216;))  # Find me a quote! (only need to find the left quotes and the primes)
@@ -168,7 +168,7 @@ def typogrify(text):
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
-    Works in these block tags ``(h1-h6, p, li)`` and also accounts for 
+    Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for 
     potential closing inline elements ``a, em, strong, span, b, i``
     
     >>> widont('A very simple test')
@@ -197,7 +197,7 @@ def widont(text):
                                    ([^<>\s]+                            # must be flollowed by non-tag non-space characters
                                    \s*                                  # optional white space! 
                                    (</(a|em|span|strong|i|b)[^>]*>\s*)* # optional closing inline tags with optional white space after each
-                                   (</(p|h[1-6]|li)|$))                 # end with a closing p, h1-6, li or the end of the string
+                                   (</(p|h[1-6]|li|dt|dd)|$))                 # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
     return widont_finder.sub(r'&nbsp;\2', text)
 
