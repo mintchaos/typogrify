@@ -28,9 +28,21 @@ def amp(text):
     >>> amp('&ldquo;this&rdquo; & <a href="/?that&amp;test">that</a>')
     '&ldquo;this&rdquo; <span class="amp">&amp;</span> <a href="/?that&amp;test">that</a>'
 
+    It should ignore standalone amps that are in attributes
+    >>> amp('<link href="xyz.html" title="One & Two">xyz</link>')
+    '<link href="xyz.html" title="One & Two">xyz</link>'
     """
+    # tag_pattern from http://haacked.com/archive/2004/10/25/usingregularexpressionstomatchhtml.aspx
+    # it kinda sucks but it fixes the standalone amps in attributes bug
+    tag_pattern = '</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
     amp_finder = re.compile(r"(\s|&nbsp;)(&|&amp;|&\#38;)(\s|&nbsp;)")
-    return amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", text)
+    intra_tag_finder = re.compile(r'(?P<prefix>(%s)?)(?P<text>([^<]*))(?P<suffix>(%s)?)' % (tag_pattern, tag_pattern))
+    def _amp_process(groups):
+        prefix = groups.group('prefix') or ''
+        text = amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", groups.group('text'))
+        suffix = groups.group('suffix') or ''
+        return prefix + text + suffix
+    return intra_tag_finder.sub(_amp_process, text)
 # amp = stringfilter(amp)
 
 def caps(text):
