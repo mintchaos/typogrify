@@ -27,6 +27,7 @@ def amp(text):
     'One <span class="amp">&amp;</span> two'
     >>> amp('&ldquo;this&rdquo; & <a href="/?that&amp;test">that</a>')
     '&ldquo;this&rdquo; <span class="amp">&amp;</span> <a href="/?that&amp;test">that</a>'
+
     """
     amp_finder = re.compile(r"(\s|&nbsp;)(&|&amp;|&\#38;)(\s|&nbsp;)")
     return amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", text)
@@ -182,10 +183,14 @@ def widont(text):
     'A very simple&nbsp;test'
 
     Single word items shouldn't be changed
+    >>> widont('Test')
+    'Test'
     >>> widont(' Test')
     ' Test'
     >>> widont('<ul><li>Test</p></li><ul>')
     '<ul><li>Test</p></li><ul>'
+    >>> widont('<ul><li> Test</p></li><ul>')
+    '<ul><li> Test</p></li><ul>'
     
     >>> widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
     '<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
@@ -209,13 +214,14 @@ def widont(text):
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
-    widont_finder = re.compile(r"""(\s+)                                # the space to replace
+    widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
+                                   \s+                                # the space to replace
                                    ([^<>\s]+                            # must be flollowed by non-tag non-space characters
                                    \s*                                  # optional white space! 
-                                   (</(a|em|span|strong|i|b)[^>]*>\s*)* # optional closing inline tags with optional white space after each
+                                   (</(a|em|span|strong|i|b)>\s*)* # optional closing inline tags with optional white space after each
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                 # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
-    return widont_finder.sub(r'&nbsp;\2', text)
+    return widont_finder.sub(r'\1&nbsp;\2', text)
 # widont = stringfilter(widont)
 
 register.filter('amp', amp)
