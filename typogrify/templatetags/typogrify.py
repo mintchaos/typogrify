@@ -7,7 +7,7 @@ from django.template.defaultfilters import stringfilter
 register = template.Library()
 
 def amp(text):
-    """Wraps apersands in html with ``<span class="amp">`` so they can be
+    """Wraps apersands in HTML with ``<span class="amp">`` so they can be
     styled with CSS. Apersands are also normalized to ``&amp;``. Requires 
     ampersands to have whitespace or an ``&nbsp;`` on both sides.
     
