@@ -1,0 +1,7 @@
+INSTALL.txt
+LICENSE.txt
+MANIFEST.in
+setup.py
+typogrify/__init__.py
+typogrify/templatetags/__init__.py
+typogrify/templatetags/typogrify.py
