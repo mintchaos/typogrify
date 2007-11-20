@@ -2,6 +2,8 @@
 import re
 from django.conf import settings
 from django import template
+from django.template.defaultfilters import stringfilter
+
 register = template.Library()
 
 def amp(text):
@@ -28,6 +30,7 @@ def amp(text):
     """
     amp_finder = re.compile(r"(\s|&nbsp;)(&|&amp;|&\#38;)(\s|&nbsp;)")
     return amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", text)
+# amp = stringfilter(amp)
 
 def caps(text):
     """Wraps multiple capital letters in ``<span class="caps">`` 
@@ -102,6 +105,7 @@ def caps(text):
                 result.append(cap_finder.sub(_cap_wrapper, token[1]))
             
     return "".join(result)
+# caps = stringfilter(caps)
 
 def initial_quotes(text):
     """Wraps initial quotes in ``class="dquo"`` for double quotes or  
@@ -135,6 +139,7 @@ def initial_quotes(text):
         return """%s<span class="%s">%s</span>""" % (matchobj.group(1), classname, quote) 
         
     return quote_finder.sub(_quote_wrapper, text)
+# initial_quotes = stringfilter(initial_quotes)
 
 def smartypants(text):
     """Applies smarty pants to curl quotes.
@@ -150,6 +155,7 @@ def smartypants(text):
         return text
     else:
         return smartypants.smartyPants(text)
+# smartypants = stringfilter(smartypants)
 
 def typogrify(text):
     """The super typography filter
@@ -165,6 +171,7 @@ def typogrify(text):
     text = caps(text)
     text = initial_quotes(text)
     return text
+# typogrify = stringfilter(typogrify)
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
@@ -173,6 +180,12 @@ def widont(text):
     
     >>> widont('A very simple test')
     'A very simple&nbsp;test'
+
+    Single word items shouldn't be changed
+    >>> widont(' Test')
+    ' Test'
+    >>> widont('<ul><li>Test</p></li><ul>')
+    '<ul><li>Test</p></li><ul>'
     
     >>> widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
     '<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
@@ -190,6 +203,9 @@ def widont(text):
     >>> widont('<div>Divs get no love!</div>')
     '<div>Divs get no love!</div>'
     
+    >>> widont('<pre>Neither do PREs</pre>')
+    '<pre>Neither do PREs</pre>'
+    
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
@@ -197,9 +213,10 @@ def widont(text):
                                    ([^<>\s]+                            # must be flollowed by non-tag non-space characters
                                    \s*                                  # optional white space! 
                                    (</(a|em|span|strong|i|b)[^>]*>\s*)* # optional closing inline tags with optional white space after each
-                                   (</(p|h[1-6]|li|dt|dd)|$))                 # end with a closing p, h1-6, li or the end of the string
+                                   ((</(p|h[1-6]|li|dt|dd)>)|$))                 # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
     return widont_finder.sub(r'&nbsp;\2', text)
+# widont = stringfilter(widont)
 
 register.filter('amp', amp)
 register.filter('caps', caps)
