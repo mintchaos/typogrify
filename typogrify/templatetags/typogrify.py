@@ -3,6 +3,7 @@ from django.conf import settings
 from django import template
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from django.utils.encoding import force_unicode
 
 register = template.Library()
 
@@ -12,26 +13,27 @@ def amp(text):
     ampersands to have whitespace or an ``&nbsp;`` on both sides.
     
     >>> amp('One & two')
-    'One <span class="amp">&amp;</span> two'
+    u'One <span class="amp">&amp;</span> two'
     >>> amp('One &amp; two')
-    'One <span class="amp">&amp;</span> two'
+    u'One <span class="amp">&amp;</span> two'
     >>> amp('One &#38; two')
-    'One <span class="amp">&amp;</span> two'
+    u'One <span class="amp">&amp;</span> two'
 
     >>> amp('One&nbsp;&amp;&nbsp;two')
-    'One&nbsp;<span class="amp">&amp;</span>&nbsp;two'
+    u'One&nbsp;<span class="amp">&amp;</span>&nbsp;two'
 
     It won't mess up & that are already wrapped, in entities or URLs
 
     >>> amp('One <span class="amp">&amp;</span> two')
-    'One <span class="amp">&amp;</span> two'
+    u'One <span class="amp">&amp;</span> two'
     >>> amp('&ldquo;this&rdquo; & <a href="/?that&amp;test">that</a>')
-    '&ldquo;this&rdquo; <span class="amp">&amp;</span> <a href="/?that&amp;test">that</a>'
+    u'&ldquo;this&rdquo; <span class="amp">&amp;</span> <a href="/?that&amp;test">that</a>'
 
     It should ignore standalone amps that are in attributes
     >>> amp('<link href="xyz.html" title="One & Two">xyz</link>')
-    '<link href="xyz.html" title="One & Two">xyz</link>'
+    u'<link href="xyz.html" title="One & Two">xyz</link>'
     """
+    text = force_unicode(text)
     # tag_pattern from http://haacked.com/archive/2004/10/25/usingregularexpressionstomatchhtml.aspx
     # it kinda sucks but it fixes the standalone amps in attributes bug
     tag_pattern = '</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
@@ -51,22 +53,23 @@ def caps(text):
     so they can be styled with CSS. 
     
     >>> caps("A message from KU")
-    'A message from <span class="caps">KU</span>'
+    u'A message from <span class="caps">KU</span>'
     
     Uses the smartypants tokenizer to not screw with HTML or with tags it shouldn't.
     
     >>> caps("<PRE>CAPS</pre> more CAPS")
-    '<PRE>CAPS</pre> more <span class="caps">CAPS</span>'
+    u'<PRE>CAPS</pre> more <span class="caps">CAPS</span>'
 
     >>> caps("A message from 2KU2 with digits")
-    'A message from <span class="caps">2KU2</span> with digits'
+    u'A message from <span class="caps">2KU2</span> with digits'
         
     >>> caps("Dotted caps followed by spaces should never include them in the wrap D.O.T.   like so.")
-    'Dotted caps followed by spaces should never include them in the wrap <span class="caps">D.O.T.</span>  like so.'
+    u'Dotted caps followed by spaces should never include them in the wrap <span class="caps">D.O.T.</span>  like so.'
 
     >>> caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
-    '<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
+    u'<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
     """
+    text = force_unicode(text)
     try:
         import smartypants
     except ImportError:
@@ -127,16 +130,17 @@ def initial_quotes(text):
     and also accounts for potential opening inline elements ``a, em, strong, span, b, i``
     
     >>> initial_quotes('"With primes"')
-    '<span class="dquo">"</span>With primes"'
+    u'<span class="dquo">"</span>With primes"'
     >>> initial_quotes("'With single primes'")
-    '<span class="quo">\\'</span>With single primes\\''
+    u'<span class="quo">\\'</span>With single primes\\''
     
     >>> initial_quotes('<a href="#">"With primes and a link"</a>')
-    '<a href="#"><span class="dquo">"</span>With primes and a link"</a>'
+    u'<a href="#"><span class="dquo">"</span>With primes and a link"</a>'
     
     >>> initial_quotes('&#8220;With smartypanted quotes&#8221;')
-    '<span class="dquo">&#8220;</span>With smartypanted quotes&#8221;'
+    u'<span class="dquo">&#8220;</span>With smartypanted quotes&#8221;'
     """
+    text = force_unicode(text)
     quote_finder = re.compile(r"""((<(p|h[1-6]|li|dt|dd)[^>]*>|^)              # start with an opening p, h1-6, li, dd, dt or the start of the string
                                   \s*                                          # optional white space! 
                                   (<(a|em|span|strong|i|b)[^>]*>\s*)*)         # optional opening inline tags, with more optional white space for each.
@@ -159,8 +163,9 @@ def smartypants(text):
     """Applies smarty pants to curl quotes.
     
     >>> smartypants('The "Green" man')
-    'The &#8220;Green&#8221; man'
+    u'The &#8220;Green&#8221; man'
     """
+    text = force_unicode(text)
     try:
         import smartypants
     except ImportError:
@@ -178,12 +183,13 @@ def typogrify(text):
     Applies the following filters: widont, smartypants, caps, amp, initial_quotes
     
     >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    u'<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
 
     Each filters properly handles autoescaping.
     >>> conditional_escape(typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>'))
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    u'<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
     """
+    text = force_unicode(text)
     text = amp(text)
     text = widont(text)
     text = smartypants(text)
@@ -197,40 +203,41 @@ def widont(text):
     potential closing inline elements ``a, em, strong, span, b, i``
     
     >>> widont('A very simple test')
-    'A very simple&nbsp;test'
+    u'A very simple&nbsp;test'
 
     Single word items shouldn't be changed
     >>> widont('Test')
-    'Test'
+    u'Test'
     >>> widont(' Test')
-    ' Test'
+    u' Test'
     >>> widont('<ul><li>Test</p></li><ul>')
-    '<ul><li>Test</p></li><ul>'
+    u'<ul><li>Test</p></li><ul>'
     >>> widont('<ul><li> Test</p></li><ul>')
-    '<ul><li> Test</p></li><ul>'
+    u'<ul><li> Test</p></li><ul>'
     
     >>> widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
-    '<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
+    u'<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
     
     >>> widont('<h1><a href="#">In a link inside a heading</i> </a></h1>')
-    '<h1><a href="#">In a link inside a&nbsp;heading</i> </a></h1>'
+    u'<h1><a href="#">In a link inside a&nbsp;heading</i> </a></h1>'
     
     >>> widont('<h1><a href="#">In a link</a> followed by other text</h1>')
-    '<h1><a href="#">In a link</a> followed by other&nbsp;text</h1>'
+    u'<h1><a href="#">In a link</a> followed by other&nbsp;text</h1>'
 
     Empty HTMLs shouldn't error
     >>> widont('<h1><a href="#"></a></h1>') 
-    '<h1><a href="#"></a></h1>'
+    u'<h1><a href="#"></a></h1>'
     
     >>> widont('<div>Divs get no love!</div>')
-    '<div>Divs get no love!</div>'
+    u'<div>Divs get no love!</div>'
     
     >>> widont('<pre>Neither do PREs</pre>')
-    '<pre>Neither do PREs</pre>'
+    u'<pre>Neither do PREs</pre>'
     
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
-    '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
+    u'<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
+    text = force_unicode(text)
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
                                    \s+                                             # the space to replace
                                    ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
