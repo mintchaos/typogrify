@@ -66,6 +66,10 @@ def caps(text):
     >>> caps("Dotted caps followed by spaces should never include them in the wrap D.O.T.   like so.")
     u'Dotted caps followed by spaces should never include them in the wrap <span class="caps">D.O.T.</span>  like so.'
 
+    All caps with with apostrophes in them shouldn't break. Only handles dump apostrophes though.
+    >>> caps("JIMMY'S")
+    u'<span class="caps">JIMMY\\'S</span>'
+
     >>> caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
     u'<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
     """
@@ -84,7 +88,7 @@ def caps(text):
     cap_finder = re.compile(r"""(
                             (\b[A-Z\d]*        # Group 2: Any amount of caps and digits
                             [A-Z]\d*[A-Z]      # A cap string much at least include two caps (but they can have digits between them)
-                            [A-Z\d]*\b)        # Any amount of caps and digits
+                            [A-Z\d']*\b)       # Any amount of caps and digits or dumb apostsrophes
                             | (\b[A-Z]+\.\s?   # OR: Group 3: Some caps, followed by a '.' and an optional space
                             (?:[A-Z]+\.\s?)+)  # Followed by the same thing at least once more
                             (?:\s|\b|$))
