@@ -1,7 +1,8 @@
 import re
 from django.conf import settings
 from django import template
-from django.template.defaultfilters import stringfilter
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -41,8 +42,9 @@ def amp(text):
         text = amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", groups.group('text'))
         suffix = groups.group('suffix') or ''
         return prefix + text + suffix
-    return intra_tag_finder.sub(_amp_process, text)
-# amp = stringfilter(amp)
+    output = intra_tag_finder.sub(_amp_process, text)
+    return mark_safe(output)
+amp.is_safe = True
 
 def caps(text):
     """Wraps multiple capital letters in ``<span class="caps">`` 
@@ -115,9 +117,9 @@ def caps(text):
                 result.append(token[1])
             else:
                 result.append(cap_finder.sub(_cap_wrapper, token[1]))
-            
-    return "".join(result)
-# caps = stringfilter(caps)
+    output = "".join(result)
+    return mark_safe(output)
+caps.is_safe = True
 
 def initial_quotes(text):
     """Wraps initial quotes in ``class="dquo"`` for double quotes or  
@@ -149,9 +151,9 @@ def initial_quotes(text):
             classname = "quo"
             quote = matchobj.group(8)
         return """%s<span class="%s">%s</span>""" % (matchobj.group(1), classname, quote) 
-        
-    return quote_finder.sub(_quote_wrapper, text)
-# initial_quotes = stringfilter(initial_quotes)
+    output = quote_finder.sub(_quote_wrapper, text)
+    return mark_safe(output)
+initial_quotes.is_safe = True
 
 def smartypants(text):
     """Applies smarty pants to curl quotes.
@@ -166,8 +168,9 @@ def smartypants(text):
             raise template.TemplateSyntaxError, "Error in {% smartypants %} filter: The Python smartypants library isn't installed."
         return text
     else:
-        return smartypants.smartyPants(text)
-# smartypants = stringfilter(smartypants)
+        output = smartypants.smartyPants(text)
+        return mark_safe(output)
+smartypants.is_safe = True
 
 def typogrify(text):
     """The super typography filter
@@ -176,6 +179,10 @@ def typogrify(text):
     
     >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
     '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+
+    Each filters properly handles autoescaping.
+    >>> conditional_escape(typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>'))
+    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
     """
     text = amp(text)
     text = widont(text)
@@ -183,7 +190,6 @@ def typogrify(text):
     text = caps(text)
     text = initial_quotes(text)
     return text
-# typogrify = stringfilter(typogrify)
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
@@ -232,8 +238,9 @@ def widont(text):
                                    (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
-    return widont_finder.sub(r'\1&nbsp;\2', text)
-# widont = stringfilter(widont)
+    output = widont_finder.sub(r'\1&nbsp;\2', text)
+    return mark_safe(output)
+widont.is_safe = True
 
 register.filter('amp', amp)
 register.filter('caps', caps)
