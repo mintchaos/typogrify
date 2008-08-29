@@ -1,13 +1,13 @@
 from distutils.core import setup
 
 setup(name='typogrify',
-      version='0.2',
+      version='1.0',
       description='Typography related template filters for Django applications',
       author='Christian Metts',
       author_email='xian@mintchaos.com',
       url='http://code.google.com/p/typogrify/',
       packages=['typogrify', 'typogrify.templatetags'],
-      classifiers=['Development Status :: 1 - Beta',
+      classifiers=['Development Status :: 1',
                    'Environment :: Web Environment',
                    'Intended Audience :: Developers :: Designers',
                    'License :: OSI Approved :: BSD License',
