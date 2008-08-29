@@ -181,6 +181,25 @@ def smartypants(text):
         return mark_safe(output)
 smartypants.is_safe = True
 
+def titlecase(text):
+    """Support for titlecase.py's titlecasing
+
+    >>> titlecase("this V that")
+    u'This v That'
+
+    >>> titlecase("this is just an example.com")
+    u'This Is Just an example.com'
+    """
+    text = force_unicode(text)
+    try:
+        import titlecase
+    except ImportError:
+        if settings.DEBUG:
+            raise template.TemplateSyntaxError, "Error in {% titlecase %} filter: The titlecase.py library isn't installed."
+        return text
+    else:
+        return titlecase.titlecase(text)
+
 def typogrify(text):
     """The super typography filter
     
@@ -257,6 +276,7 @@ register.filter('amp', amp)
 register.filter('caps', caps)
 register.filter('initial_quotes', initial_quotes)
 register.filter('smartypants', smartypants)
+register.filter('titlecase', titlecase)
 register.filter('typogrify', typogrify)
 register.filter('widont', widont)
 
