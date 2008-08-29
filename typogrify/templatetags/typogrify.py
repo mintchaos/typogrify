@@ -1,4 +1,3 @@
-# from django.conf import settings
 import re
 from django.conf import settings
 from django import template
@@ -227,11 +226,11 @@ def widont(text):
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
-                                   \s+                                # the space to replace
-                                   ([^<>\s]+                            # must be flollowed by non-tag non-space characters
-                                   \s*                                  # optional white space! 
-                                   (</(a|em|span|strong|i|b)>\s*)* # optional closing inline tags with optional white space after each
-                                   ((</(p|h[1-6]|li|dt|dd)>)|$))                 # end with a closing p, h1-6, li or the end of the string
+                                   \s+                                             # the space to replace
+                                   ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
+                                   \s*                                             # optional white space! 
+                                   (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
+                                   ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
     return widont_finder.sub(r'\1&nbsp;\2', text)
 # widont = stringfilter(widont)
