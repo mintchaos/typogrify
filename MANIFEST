@@ -4,4 +4,5 @@ MANIFEST.in
 setup.py
 typogrify/__init__.py
 typogrify/templatetags/__init__.py
-typogrify/templatetags/typogrify.py
+typogrify/templatetags/django_filters.py
+typogrify/templatetags/jinja2_filters.py

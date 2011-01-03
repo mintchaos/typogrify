@@ -1,5 +1,8 @@
-================================================================
-typogrify: Django template filters to make web typography easier
+    Note: This fork tries to separate the general purpose logic from django
+    related code so that it can be used with other template engines like
+    Jinja2.
+
+typogrify: Filters to make web typography easier
 ================================================================
 
 

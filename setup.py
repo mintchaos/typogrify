@@ -1,8 +1,8 @@
 from distutils.core import setup
 
 setup(name='typogrify',
-      version='1.0',
-      description='Typography related template filters for Django applications',
+      version='1.0.1a',
+      description='Typography related template filters for Django & Jinja2 applications',
       author='Christian Metts',
       author_email='xian@mintchaos.com',
       url='http://code.google.com/p/typogrify/',
