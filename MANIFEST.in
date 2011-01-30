@@ -1,3 +1,3 @@
 include INSTALL.txt
 include LICENSE.txt
-include MANIFEST.in
+recursive-include docs *
