@@ -19,5 +19,7 @@ setup(
         'Programming Language :: Python',
         'Framework :: Django',
         'Topic :: Utilities'
-    ]
+    ],
+
+    install_requires=['smartypants>=1.6']
 )
