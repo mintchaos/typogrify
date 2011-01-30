@@ -8,6 +8,7 @@ setup(
     author='Christian Metts',
     author_email='xian@mintchaos.com',
     license='BSD',
+    description='Typography related template filters for Django applications',
     url='https://github.com/mintchaos/typogrify',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
