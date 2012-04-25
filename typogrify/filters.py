@@ -11,25 +11,25 @@ def amp(text):
     styled with CSS. Apersands are also normalized to ``&amp;``. Requires
     ampersands to have whitespace or an ``&nbsp;`` on both sides.
 
-    >>> Typogrify.amp('One & two')
+    >>> amp('One & two')
     'One <span class="amp">&amp;</span> two'
-    >>> Typogrify.amp('One &amp; two')
+    >>> amp('One &amp; two')
     'One <span class="amp">&amp;</span> two'
-    >>> Typogrify.amp('One &#38; two')
+    >>> amp('One &#38; two')
     'One <span class="amp">&amp;</span> two'
 
-    >>> Typogrify.amp('One&nbsp;&amp;&nbsp;two')
+    >>> amp('One&nbsp;&amp;&nbsp;two')
     'One&nbsp;<span class="amp">&amp;</span>&nbsp;two'
 
     It won't mess up & that are already wrapped, in entities or URLs
 
-    >>> Typogrify.amp('One <span class="amp">&amp;</span> two')
+    >>> amp('One <span class="amp">&amp;</span> two')
     'One <span class="amp">&amp;</span> two'
-    >>> Typogrify.amp('&ldquo;this&rdquo; & <a href="/?that&amp;test">that</a>')
+    >>> amp('&ldquo;this&rdquo; & <a href="/?that&amp;test">that</a>')
     '&ldquo;this&rdquo; <span class="amp">&amp;</span> <a href="/?that&amp;test">that</a>'
 
     It should ignore standalone amps that are in attributes
-    >>> Typogrify.amp('<link href="xyz.html" title="One & Two">xyz</link>')
+    >>> amp('<link href="xyz.html" title="One & Two">xyz</link>')
     '<link href="xyz.html" title="One & Two">xyz</link>'
     """
     # tag_pattern from http://haacked.com/archive/2004/10/25/usingregularexpressionstomatchhtml.aspx
@@ -52,25 +52,25 @@ def caps(text):
     """Wraps multiple capital letters in ``<span class="caps">``
     so they can be styled with CSS.
 
-    >>> Typogrify.caps("A message from KU")
+    >>> caps("A message from KU")
     'A message from <span class="caps">KU</span>'
 
     Uses the smartypants tokenizer to not screw with HTML or with tags it shouldn't.
 
-    >>> Typogrify.caps("<PRE>CAPS</pre> more CAPS")
+    >>> caps("<PRE>CAPS</pre> more CAPS")
     '<PRE>CAPS</pre> more <span class="caps">CAPS</span>'
 
-    >>> Typogrify.caps("A message from 2KU2 with digits")
+    >>> caps("A message from 2KU2 with digits")
     'A message from <span class="caps">2KU2</span> with digits'
 
-    >>> Typogrify.caps("Dotted caps followed by spaces should never include them in the wrap D.O.T.   like so.")
+    >>> caps("Dotted caps followed by spaces should never include them in the wrap D.O.T.   like so.")
     'Dotted caps followed by spaces should never include them in the wrap <span class="caps">D.O.T.</span>  like so.'
 
     All caps with with apostrophes in them shouldn't break. Only handles dump apostrophes though.
-    >>> Typogrify.caps("JIMMY'S")
+    >>> caps("JIMMY'S")
     '<span class="caps">JIMMY\\'S</span>'
 
-    >>> Typogrify.caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
+    >>> caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
     '<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
     """
     try:
@@ -129,15 +129,15 @@ def initial_quotes(text):
     ``class="quo"`` for single quotes. Works in these block tags ``(h1-h6, p, li, dt, dd)``
     and also accounts for potential opening inline elements ``a, em, strong, span, b, i``
 
-    >>> Typogrify.initial_quotes('"With primes"')
+    >>> initial_quotes('"With primes"')
     '<span class="dquo">"</span>With primes"'
-    >>> Typogrify.initial_quotes("'With single primes'")
+    >>> initial_quotes("'With single primes'")
     '<span class="quo">\\'</span>With single primes\\''
 
-    >>> Typogrify.initial_quotes('<a href="#">"With primes and a link"</a>')
+    >>> initial_quotes('<a href="#">"With primes and a link"</a>')
     '<a href="#"><span class="dquo">"</span>With primes and a link"</a>'
 
-    >>> Typogrify.initial_quotes('&#8220;With smartypanted quotes&#8221;')
+    >>> initial_quotes('&#8220;With smartypanted quotes&#8221;')
     '<span class="dquo">&#8220;</span>With smartypanted quotes&#8221;'
     """
     quote_finder = re.compile(r"""((<(p|h[1-6]|li|dt|dd)[^>]*>|^)              # start with an opening p, h1-6, li, dd, dt or the start of the string
@@ -162,7 +162,7 @@ def initial_quotes(text):
 def smartypants(text):
     """Applies smarty pants to curl quotes.
 
-    >>> Typogrify.smartypants('The "Green" man')
+    >>> smartypants('The "Green" man')
     'The &#8220;Green&#8221; man'
     """
     try:
@@ -177,10 +177,10 @@ def smartypants(text):
 def titlecase(text):
     """Support for titlecase.py's titlecasing
 
-    >>> Typogrify.titlecase("this V that")
+    >>> titlecase("this V that")
     'This v That'
 
-    >>> Typogrify.titlecase("this is just an example.com")
+    >>> titlecase("this is just an example.com")
     'This Is Just an example.com'
     """
     try:
@@ -196,7 +196,7 @@ def typogrify(text):
 
     Applies the following filters: widont, smartypants, caps, amp, initial_quotes
 
-    >>> Typogrify.typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
+    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
     '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
 
     """
@@ -213,39 +213,39 @@ def widont(text):
     Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for
     potential closing inline elements ``a, em, strong, span, b, i``
 
-    >>> Typogrify.widont('A very simple test')
+    >>> widont('A very simple test')
     'A very simple&nbsp;test'
 
     Single word items shouldn't be changed
-    >>> Typogrify.widont('Test')
+    >>> widont('Test')
     'Test'
-    >>> Typogrify.widont(' Test')
+    >>> widont(' Test')
     ' Test'
-    >>> Typogrify.widont('<ul><li>Test</p></li><ul>')
+    >>> widont('<ul><li>Test</p></li><ul>')
     '<ul><li>Test</p></li><ul>'
-    >>> Typogrify.widont('<ul><li> Test</p></li><ul>')
+    >>> widont('<ul><li> Test</p></li><ul>')
     '<ul><li> Test</p></li><ul>'
 
-    >>> Typogrify.widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
+    >>> widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
     '<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
 
-    >>> Typogrify.widont('<h1><a href="#">In a link inside a heading</i> </a></h1>')
+    >>> widont('<h1><a href="#">In a link inside a heading</i> </a></h1>')
     '<h1><a href="#">In a link inside a&nbsp;heading</i> </a></h1>'
 
-    >>> Typogrify.widont('<h1><a href="#">In a link</a> followed by other text</h1>')
+    >>> widont('<h1><a href="#">In a link</a> followed by other text</h1>')
     '<h1><a href="#">In a link</a> followed by other&nbsp;text</h1>'
 
     Empty HTMLs shouldn't error
-    >>> Typogrify.widont('<h1><a href="#"></a></h1>')
+    >>> widont('<h1><a href="#"></a></h1>')
     '<h1><a href="#"></a></h1>'
 
-    >>> Typogrify.widont('<div>Divs get no love!</div>')
+    >>> widont('<div>Divs get no love!</div>')
     '<div>Divs get no love!</div>'
 
-    >>> Typogrify.widont('<pre>Neither do PREs</pre>')
+    >>> widont('<pre>Neither do PREs</pre>')
     '<pre>Neither do PREs</pre>'
 
-    >>> Typogrify.widont('<div><p>But divs with paragraphs do!</p></div>')
+    >>> widont('<div><p>But divs with paragraphs do!</p></div>')
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
