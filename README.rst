@@ -1,7 +1,3 @@
-    Note: This fork tries to separate the general purpose logic from django
-    related code so that it can be used with other template engines like
-    Jinja2.
-
 typogrify: Filters to make web typography easier
 ================================================================
 
@@ -14,39 +10,21 @@ plain text in order to yield typographically-improved HTML.
 Requirements
 ============
 
-``typogrify`` is designed to work with `Django`_, and so requires a
-functioning installation of Django 0.96 or later. Also requires `the
-Python port of John Gruber's SmartyPants`_ for tokenization.
+``typogrify`` is a set of functions that take text or html input and mark them up with HTML.
+it requires `the Python port of John Gruber's SmartyPants`_ for tokenization.
 
-.._ Django: http://www.djangoproject.com/
+It includes optional template filters for Django. So you'll need Django if you want to use those.
+
 .._ The Python port of John Gruber's SmartyPants: http://web.chad.org/projects/smartypants.py/
 
 
-Installation
-============
-
-To install a packaged version of ``typogrify``, download `the latest
-package from Google Code`_, and -- in the directory in which you
-downloaded it -- open a command line and do the following::
-
-    tar zxvf typogrify-0.2.tar.gz
-    cd typogrify-0.2
-    python setup.py install
-
-This will perform a standard installation of ``typogrify``.
-
-Alternately, you can perform a Subversion checkout of the latest code;
-execute the following in a directory that's on your Python path::
-
-    svn checkout http://typogrify.googlecode.com/svn/trunk/typogrify/
+To use with Django
+==================
 
 Once ``typogrify`` is installed on your system, you can add it to the
 ``INSTALLED_APPS`` setting of any Django project in which you wish to
 use it, and then use ``{% load typogrify %}`` in your templates to
 load the filters it provides.
-
-
-.._ the latest package from Google Code: http://typogrify.googlecode.com/files/typogrify-0.1.tar.gz
 
 
 Included filters
