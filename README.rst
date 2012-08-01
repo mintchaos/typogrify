@@ -12,6 +12,9 @@ Version 2 changes
 
 * Django is no longer a requirement. The typogrify filters can be used in any
   environment by importing them from typogrify.filters
+* Experimental jinja2 support added in typogrify.templatetags.jinja_filters –
+  untested and defintely needs some eyes on it. Might trigger a point release
+  soon to update.
 
 
 Requirements
