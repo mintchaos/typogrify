@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='typogrify',
-    version='1.0.1a',
+    version='2.0.0',
     packages=find_packages(),
     author='Christian Metts',
     author_email='xian@mintchaos.com',

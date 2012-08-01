@@ -7,6 +7,13 @@ template system which automatically apply various transformations to
 plain text in order to yield typographically-improved HTML.
 
 
+Version 2 changes
+-----------------
+
+* Django is no longer a requirement. The typogrify filters can be used in any
+  environment by importing them from typogrify.filters
+
+
 Requirements
 ============
 
@@ -21,9 +28,13 @@ It includes optional template filters for Django. So you'll need Django if you w
 To use with Django
 ==================
 
+BACKWARDS INCOMPATIBILTY NOTE: Version 2 of typogrify has moved the typogrify
+tag to {% load typogrify_tags %} – This necessary to allow the tags files to
+import from the rest of the library.
+
 Once ``typogrify`` is installed on your system, you can add it to the
 ``INSTALLED_APPS`` setting of any Django project in which you wish to
-use it, and then use ``{% load typogrify %}`` in your templates to
+use it, and then use ``{% load typogrify_tags %}`` in your templates to
 load the filters it provides.
 
 
