@@ -1,4 +1,4 @@
-from typogrify.filters import amp, caps, initial_quotes, smartypants, titlecase, typogrify, widont, TypogrifyError
+from typogrify.filters import amp, caps, initial_quotes, quotespace, smartypants, titlecase, typogrify, widont, TypogrifyError
 from functools import wraps
 import jinja2
 from jinja2.exceptions import TemplateError
@@ -34,3 +34,4 @@ def register(env):
     env.filters['titlecase'] = make_safe(titlecase)
     env.filters['typogrify'] = make_safe(typogrify)
     env.filters['widont'] = make_safe(widont)
+    env.filters['quotespace'] = make_safe(quotespace)

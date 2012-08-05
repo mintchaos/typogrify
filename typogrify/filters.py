@@ -5,6 +5,10 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def quotespace(text):
+    q_re = r"""&ldquo;|&\#8220;|&\#x201c;|\u201c|&lsquo;|&\#8216;|&\#x2018;|\u2018|&rdquo;|&\#8221;|&\#x201d;|\u201d|&rsquo;|&\#8217;|&\#x2019;|\u2019"""
+    qq_finder = re.compile("(%s)(%s)"%(q_re, q_re))
+    return re.sub(qq_finder, "\\1&#x2009;\\2", text)
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -204,6 +208,7 @@ def typogrify(text):
     text = widont(text)
     text = smartypants(text)
     text = caps(text)
+    text = quotespace(text)
     text = initial_quotes(text)
     return text
 
