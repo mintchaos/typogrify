@@ -5,8 +5,51 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def _mk_unicode_re(char):
+    """Generate a partial regular expression that can be used to grab
+    all possibilities for a unicode character (numeric & named entities).
+
+    >>> _mk_unicode_re(u'\u2018')
+    u'\u2018|&#8216;|&#x2018;|&lsquo;'
+    """
+    
+    named_entities = { 8216 : "&lsquo;",
+                       8217 : "&rsquo;",
+                       8220 : "&ldquo;",
+                       8221 : "&rdquo;" }
+    
+    if (len(char) != 1):
+        return ""
+    else:
+        p = [char]
+        cp = ord(char)
+        p.append("&#%d;"%(cp))
+        p.append("&#x%s;"%(hex(cp)[2:]))
+        if named_entities.has_key(cp):
+            p.append(named_entities[cp])
+    return "|".join(p)
+        
 def quotespace(text):
-    q_re = r"""&ldquo;|&\#8220;|&\#x201c;|\u201c|&lsquo;|&\#8216;|&\#x2018;|\u2018|&rdquo;|&\#8221;|&\#x201d;|\u201d|&rsquo;|&\#8217;|&\#x2019;|\u2019"""
+    """Inserts a thinspace (U+2009) between adjacent quotation marks
+
+    >>> quotespace("\\"'")
+    '"&#x2009;\\''
+    >>> quotespace("\\"\\"")
+    '"&#x2009;"'
+    >>> quotespace(u"\u2018\u201c")
+    u'\u2018&#x2009;\u201c'
+    >>> quotespace(u"\u201d\u2019")
+    u'\u201d&#x2009;\u2019'
+    >>> quotespace(u"&#8216;\u2019")
+    u'&#8216;&#x2009;\u2019'
+    """
+
+    q_re = r"""'|"|%s|%s|%s|%s"""%(
+      _mk_unicode_re(u"\u2018"),
+      _mk_unicode_re(u"\u2019"),
+      _mk_unicode_re(u"\u201c"),
+      _mk_unicode_re(u"\u201d"))
+      
     qq_finder = re.compile("(%s)(%s)"%(q_re, q_re))
     return re.sub(qq_finder, "\\1&#x2009;\\2", text)
 
