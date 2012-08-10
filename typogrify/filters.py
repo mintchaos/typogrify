@@ -33,15 +33,15 @@ def quotespace(text):
     """Inserts a thinspace (U+2009) between adjacent quotation marks
 
     >>> quotespace("\\"'")
-    '"&#x2009;\\''
+    '"&#x202f;\\''
     >>> quotespace("\\"\\"")
-    '"&#x2009;"'
+    '"&#x202f;"'
     >>> quotespace(u"\u2018\u201c")
-    u'\u2018&#x2009;\u201c'
+    u'\u2018&#x202f;\u201c'
     >>> quotespace(u"\u201d\u2019")
-    u'\u201d&#x2009;\u2019'
+    u'\u201d&#x202f;\u2019'
     >>> quotespace(u"&#8216;\u2019")
-    u'&#8216;&#x2009;\u2019'
+    u'&#8216;&#x202f;\u2019'
     """
 
     q_re = r"""'|"|%s|%s|%s|%s"""%(
@@ -51,7 +51,7 @@ def quotespace(text):
       _mk_unicode_re(u"\u201d"))
       
     qq_finder = re.compile("(%s)(%s)"%(q_re, q_re))
-    return re.sub(qq_finder, "\\1&#x2009;\\2", text)
+    return re.sub(qq_finder, "\\1&#x202f;\\2", text)
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
