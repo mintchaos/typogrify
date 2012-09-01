@@ -5,6 +5,33 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def _skip_raw(text, func,
+              tags_to_skip_regex=re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)):
+    try:
+        import smartypants
+    except ImportError:
+        raise TypogrifyError("Error in {% caps %} filter: The Python SmartyPants library isn't installed.")
+    tokens = smartypants._tokenize(text)
+    result = []
+    in_skipped_tag = False
+
+    for token in tokens:
+        if token[0] == "tag":
+            # Don't mess with tags.
+            result.append(token[1])
+            close_match = tags_to_skip_regex.match(token[1])
+            if close_match and close_match.group(1) == None:
+                in_skipped_tag = True
+            else:
+                in_skipped_tag = False
+        else:
+            if in_skipped_tag:
+                result.append(token[1])
+            else:
+                result.append(func(token[1]))
+    output = "".join(result)
+    return output
+
 def _mk_unicode_re(char):
     """Generate a partial regular expression that can be used to grab
     all possibilities for a unicode character (numeric & named entities).
@@ -42,6 +69,10 @@ def quotespace(text):
     u'\u201d&#x202f;\u2019'
     >>> quotespace(u"&#8216;\u2019")
     u'&#8216;&#x202f;\u2019'
+    >>> quotespace(u"<code>&#8216;\u2019</code>") # do not mess with <code>
+    u'<code>&#8216;\u2019</code>'
+    >>> quotespace(u"<pre>\\"'</pre>") # do not mess with <pre>
+    u'<pre>"\\'</pre>'
     """
 
     q_re = r"""'|"|%s|%s|%s|%s"""%(
@@ -51,7 +82,7 @@ def quotespace(text):
       _mk_unicode_re(u"\u201d"))
       
     qq_finder = re.compile("(%s)(%s)"%(q_re, q_re))
-    return re.sub(qq_finder, "\\1&#x202f;\\2", text)
+    return _skip_raw(text, lambda t: re.sub(qq_finder, "\\1&#x202f;\\2", t))
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -125,10 +156,6 @@ def caps(text):
     except ImportError:
         raise TypogrifyError("Error in {% caps %} filter: The Python SmartyPants library isn't installed.")
 
-    tokens = smartypants._tokenize(text)
-    result = []
-    in_skipped_tag = False
-
     cap_finder = re.compile(r"""(
                             (\b[A-Z\d]*        # Group 2: Any amount of caps and digits
                             [A-Z]\d*[A-Z]      # A cap string much at least include two caps (but they can have digits between them)
@@ -151,25 +178,7 @@ def caps(text):
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
-    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
-
-    for token in tokens:
-        if token[0] == "tag":
-            # Don't mess with tags.
-            result.append(token[1])
-            close_match = tags_to_skip_regex.match(token[1])
-            if close_match and close_match.group(1) == None:
-                in_skipped_tag = True
-            else:
-                in_skipped_tag = False
-        else:
-            if in_skipped_tag:
-                result.append(token[1])
-            else:
-                result.append(cap_finder.sub(_cap_wrapper, token[1]))
-    output = "".join(result)
-    return output
-
+    return _skip_raw(text, lambda t: cap_finder.sub(_cap_wrapper, t))
 
 def initial_quotes(text):
     """Wraps initial quotes in ``class="dquo"`` for double quotes or
