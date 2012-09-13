@@ -87,7 +87,7 @@ def quotespace(text):
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
     styled with CSS. Apersands are also normalized to ``&amp;``. Requires
-    ampersands to have whitespace or an ``&nbsp;`` on both sides.
+    ampersands to have whitespace or an ``&#x00A0;`` on both sides.
 
     >>> amp('One & two')
     'One <span class="amp">&amp;</span> two'
@@ -96,8 +96,8 @@ def amp(text):
     >>> amp('One &#38; two')
     'One <span class="amp">&amp;</span> two'
 
-    >>> amp('One&nbsp;&amp;&nbsp;two')
-    'One&nbsp;<span class="amp">&amp;</span>&nbsp;two'
+    >>> amp('One&#x00A0;&amp;&#x00A0;two')
+    'One&#x00A0;<span class="amp">&amp;</span>&#x00A0;two'
 
     It won't mess up & that are already wrapped, in entities or URLs
 
@@ -113,7 +113,7 @@ def amp(text):
     # tag_pattern from http://haacked.com/archive/2004/10/25/usingregularexpressionstomatchhtml.aspx
     # it kinda sucks but it fixes the standalone amps in attributes bug
     tag_pattern = '</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
-    amp_finder = re.compile(r"(\s|&nbsp;)(&|&amp;|&\#38;)(\s|&nbsp;)")
+    amp_finder = re.compile(r"(\s|&#x00A0;)(&|&amp;|&\#38;)(\s|&#x00A0;)")
     intra_tag_finder = re.compile(r'(?P<prefix>(%s)?)(?P<text>([^<]*))(?P<suffix>(%s)?)' % (tag_pattern, tag_pattern))
 
     def _amp_process(groups):
@@ -253,7 +253,7 @@ def typogrify(text):
     Applies the following filters: widont, smartypants, caps, amp, initial_quotes
 
     >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&#x00A0;obnoxiously</h2>'
 
     """
     text = amp(text)
@@ -266,12 +266,12 @@ def typogrify(text):
 
 
 def widont(text):
-    """Replaces the space between the last two words in a string with ``&nbsp;``
+    """Replaces the space between the last two words in a string with ``&#x00A0;``
     Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for
     potential closing inline elements ``a, em, strong, span, b, i``
 
     >>> widont('A very simple test')
-    'A very simple&nbsp;test'
+    'A very simple&#x00A0;test'
 
     Single word items shouldn't be changed
     >>> widont('Test')
@@ -284,13 +284,13 @@ def widont(text):
     '<ul><li> Test</p></li><ul>'
 
     >>> widont('<p>In a couple of paragraphs</p><p>paragraph two</p>')
-    '<p>In a couple of&nbsp;paragraphs</p><p>paragraph&nbsp;two</p>'
+    '<p>In a couple of&#x00A0;paragraphs</p><p>paragraph&#x00A0;two</p>'
 
     >>> widont('<h1><a href="#">In a link inside a heading</i> </a></h1>')
-    '<h1><a href="#">In a link inside a&nbsp;heading</i> </a></h1>'
+    '<h1><a href="#">In a link inside a&#x00A0;heading</i> </a></h1>'
 
     >>> widont('<h1><a href="#">In a link</a> followed by other text</h1>')
-    '<h1><a href="#">In a link</a> followed by other&nbsp;text</h1>'
+    '<h1><a href="#">In a link</a> followed by other&#x00A0;text</h1>'
 
     Empty HTMLs shouldn't error
     >>> widont('<h1><a href="#"></a></h1>')
@@ -303,7 +303,7 @@ def widont(text):
     '<pre>Neither do PREs</pre>'
 
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
-    '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
+    '<div><p>But divs with paragraphs&#x00A0;do!</p></div>'
     """
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
                                    \s+                                             # the space to replace
@@ -312,7 +312,7 @@ def widont(text):
                                    (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
-    output = widont_finder.sub(r'\1&nbsp;\2', text)
+    output = widont_finder.sub(r'\1&#x00A0;\2', text)
     return output
 
 
