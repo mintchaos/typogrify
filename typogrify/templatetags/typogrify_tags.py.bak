@@ -22,7 +22,7 @@ def make_safe(f):
         out = text
         try:
             out = f(text)
-        except TypogrifyError as e:
+        except TypogrifyError, e:
             if settings.DEBUG:
                 raise e
             return text
