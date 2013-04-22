@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import re
 
 
@@ -190,6 +193,36 @@ def titlecase(text):
     else:
         return titlecase.titlecase(text)
 
+def insecable(text):
+    """Replace the space between each double sign punctuation by a thin
+    non-breaking space.
+
+    This conform with the french typographic rules.
+
+    >>> insecable('Foo !')
+    u'Foo<span style="white-space:nowrap">&thinsp;</span>!'
+
+    >>> insecable('Foo ?')
+    u'Foo<span style="white-space:nowrap">&thinsp;</span>?'
+
+    >>> insecable('Foo : bar')
+    u'Foo<span style="white-space:nowrap">&thinsp;</span>: bar'
+
+    >>> insecable('Foo ; bar')
+    u'Foo<span style="white-space:nowrap">&thinsp;</span>; bar'
+
+    >>> insecable(u'\xab bar \xbb')
+    u'\\xab<span style="white-space:nowrap">&thinsp;</span>bar<span style="white-space:nowrap">&thinsp;</span>\\xbb'
+    """
+    nnbsp = u'<span style="white-space:nowrap">&thinsp;</span>'
+
+    return text.replace(" :", nnbsp + ":")\
+            .replace(" ;", nnbsp + ";")\
+            .replace(" ?", nnbsp + "?")\
+            .replace(" !", nnbsp + "!")\
+            .replace(u"\xab ", u"\xab" + nnbsp )\
+            .replace(u" \xbb", nnbsp + u"\xbb")
+
 
 def typogrify(text):
     """The super typography filter
@@ -205,6 +238,7 @@ def typogrify(text):
     text = smartypants(text)
     text = caps(text)
     text = initial_quotes(text)
+    text = insecable(text)
     return text
 
 
