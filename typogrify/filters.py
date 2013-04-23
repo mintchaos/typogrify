@@ -75,6 +75,9 @@ def caps(text):
 
     >>> caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
     '<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
+
+    >>> caps('<h1 class="page_title"><a href="about:blank" title="en HTML">HTML</a>')
+    '<h1 class="page_title"><a href="about:blank" title="en HTML"><span class="caps">HTML</span></a>'
     """
     try:
         import smartypants
@@ -234,11 +237,11 @@ def typogrify(text):
 
     """
     text = amp(text)
+    text = insecable(text)
     text = widont(text)
     text = smartypants(text)
     text = caps(text)
     text = initial_quotes(text)
-    text = insecable(text)
     return text
 
 
