@@ -2,12 +2,40 @@
 # -*- coding: utf-8 -*-
 
 import re
+import locale
 
 
 class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def processContent(text, processor, regex):
+    try:
+        import smartypants
+    except ImportError:
+        raise TypogrifyError("Error in {% caps %} filter: The Python SmartyPants library isn't installed.")
+
+    tokens = smartypants._tokenize(text)
+    result = []
+    in_skipped_tag = False
+    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
+
+    for token in tokens:
+        if token[0] == "tag":
+            # Don't mess with tags.
+            result.append(token[1])
+            close_match = tags_to_skip_regex.match(token[1])
+            if close_match and close_match.group(1) == None:
+                in_skipped_tag = True
+            else:
+                in_skipped_tag = False
+        else:
+            if in_skipped_tag:
+                result.append(token[1])
+            else:
+                result.append(regex.sub(processor, token[1]))
+    output = "".join(result)
+    return output
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -76,18 +104,9 @@ def caps(text):
     >>> caps("<i>D.O.T.</i>HE34T<b>RFID</b>")
     '<i><span class="caps">D.O.T.</span></i><span class="caps">HE34T</span><b><span class="caps">RFID</span></b>'
 
-    >>> caps('<h1 class="page_title"><a href="about:blank" title="en HTML">HTML</a>')
-    '<h1 class="page_title"><a href="about:blank" title="en HTML"><span class="caps">HTML</span></a>'
+    >>> caps('<h1 class="page_title"><a href="" title="HTML">HTML</a>')
+    '<h1 class="page_title"><a href="" title="HTML"><span class="caps">HTML</span></a>'
     """
-    try:
-        import smartypants
-    except ImportError:
-        raise TypogrifyError("Error in {% caps %} filter: The Python SmartyPants library isn't installed.")
-
-    tokens = smartypants._tokenize(text)
-    result = []
-    in_skipped_tag = False
-
     cap_finder = re.compile(r"""(
                             (\b[A-Z\d]*        # Group 2: Any amount of caps and digits
                             [A-Z]\d*[A-Z]      # A cap string much at least include two caps (but they can have digits between them)
@@ -109,26 +128,7 @@ def caps(text):
                 caps = matchobj.group(3)
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
-
-    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
-
-    for token in tokens:
-        if token[0] == "tag":
-            # Don't mess with tags.
-            result.append(token[1])
-            close_match = tags_to_skip_regex.match(token[1])
-            if close_match and close_match.group(1) == None:
-                in_skipped_tag = True
-            else:
-                in_skipped_tag = False
-        else:
-            if in_skipped_tag:
-                result.append(token[1])
-            else:
-                result.append(cap_finder.sub(_cap_wrapper, token[1]))
-    output = "".join(result)
-    return output
-
+    return processContent(text, _cap_wrapper, cap_finder)
 
 def initial_quotes(text):
     """Wraps initial quotes in ``class="dquo"`` for double quotes or
@@ -196,36 +196,60 @@ def titlecase(text):
     else:
         return titlecase.titlecase(text)
 
-def insecable(text):
+def french_insecable(text):
     """Replace the space between each double sign punctuation by a thin
     non-breaking space.
 
     This conform with the french typographic rules.
 
-    >>> insecable('Foo !')
+    >>> french_insecable('Foo !')
     u'Foo<span style="white-space:nowrap">&thinsp;</span>!'
 
-    >>> insecable('Foo ?')
+    >>> french_insecable('Foo ?')
     u'Foo<span style="white-space:nowrap">&thinsp;</span>?'
 
-    >>> insecable('Foo : bar')
+    >>> french_insecable('Foo : bar')
     u'Foo<span style="white-space:nowrap">&thinsp;</span>: bar'
 
-    >>> insecable('Foo ; bar')
+    >>> french_insecable('Foo ; bar')
     u'Foo<span style="white-space:nowrap">&thinsp;</span>; bar'
 
-    >>> insecable(u'\xab bar \xbb')
+    >>> french_insecable(u'\xab bar \xbb')
     u'\\xab<span style="white-space:nowrap">&thinsp;</span>bar<span style="white-space:nowrap">&thinsp;</span>\\xbb'
+
+    >>> french_insecable('123 456')
+    u'123<span style="white-space:nowrap">&thinsp;</span>456'
+
+    >>> french_insecable('123 %')
+    u'123<span style="white-space:nowrap">&thinsp;</span>%'
+
+    Space inside attributes should be preserved :
+
+    >>> french_insecable('<a title="foo !">')
+    '<a title="foo !">'
     """
     nnbsp = u'<span style="white-space:nowrap">&thinsp;</span>'
+    space_finder = re.compile(r"""(?:
+                            (\w\s[:;!\?\xbb])|       # Group 1, space before punctuation
+                            ([\xab]\s\w)|
+                            ([0-9]\s[0-9])|
+                            ([0-9]\s\%)
+                            )""", re.VERBOSE)
 
-    return text.replace(" :", nnbsp + ":")\
-            .replace(" ;", nnbsp + ";")\
-            .replace(" ?", nnbsp + "?")\
-            .replace(" !", nnbsp + "!")\
-            .replace(u"\xab ", u"\xab" + nnbsp )\
-            .replace(u" \xbb", nnbsp + u"\xbb")
+    def _insecable_wrapper(matchobj):
+        """This is necessary to keep dotted cap strings to pick up extra spaces"""
+        return matchobj.group(0).replace(" ", nnbsp)
+    return processContent(text, _insecable_wrapper, space_finder)
 
+def localize(text):
+    """ Return the text processed with the appropriate system locale
+    """
+    table = {"fr_FR" : lambda x : french_insecable(x)}
+
+    lang = locale.getdefaultlocale()[0]
+    processor = table.get(lang, lambda x : x)
+
+    return processor(text)
 
 def typogrify(text):
     """The super typography filter
@@ -237,7 +261,7 @@ def typogrify(text):
 
     """
     text = amp(text)
-    text = insecable(text)
+    text = localize(text)
     text = widont(text)
     text = smartypants(text)
     text = caps(text)
