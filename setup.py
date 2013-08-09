@@ -11,6 +11,7 @@ setup(
     author_email='xian@mintchaos.com',
     license='BSD',
     description='Typography related template filters for Django & Jinja2 applications',
+    long_description=open('README.rst').read(),
     url='https://github.com/mintchaos/typogrify',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
