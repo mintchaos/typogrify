@@ -3,7 +3,7 @@ from functools import wraps
 from django.conf import settings
 from django import template
 from django.utils.safestring import mark_safe
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_str
 
 
 register = template.Library()
@@ -17,7 +17,7 @@ def make_safe(f):
     """
     @wraps(f)
     def wrapper(text):
-        text = force_unicode(text)
+        text = force_str(text)
         f.is_safe = True
         out = text
         try:
