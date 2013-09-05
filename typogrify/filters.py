@@ -170,7 +170,7 @@ def smartypants(text):
     except ImportError:
         raise TypogrifyError("Error in {% smartypants %} filter: The Python smartypants library isn't installed.")
     else:
-        output = smartypants.smartyPants(text)
+        output = smartypants.smartypants(text)
         return output
 
 
