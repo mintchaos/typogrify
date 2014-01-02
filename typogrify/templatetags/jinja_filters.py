@@ -16,7 +16,7 @@ def make_safe(f):
         out = text
         try:
             out = f(text)
-        except TypogrifyError, e:
+        except TypogrifyError as e:
             raise TemplateError(e.message)
         return jinja2.Markup(out)
     wrapper.is_safe = True
