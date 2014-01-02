@@ -2,17 +2,16 @@
 
 from setuptools import setup, find_packages
 
-
 setup(
-    name='typogrify',
-    version='2.0.0',
+    name='typogrified',
+    version='0.0.0',
     packages=find_packages(),
-    author='Christian Metts',
-    author_email='xian@mintchaos.com',
+    author='Justin Mayer',
+    author_email='entroP@gmail.com',
     license='BSD',
-    description='Typography related template filters for Django & Jinja2 applications',
+    description='Filters to enhance web typography, including support for Django & Jinja templates',
     long_description=open('README.rst').read(),
-    url='https://github.com/mintchaos/typogrify',
+    url='https://github.com/justinmayer/typogrify',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
@@ -21,6 +20,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Framework :: Django',
+        'Framework :: Flask',
         'Topic :: Utilities'
     ],
 
