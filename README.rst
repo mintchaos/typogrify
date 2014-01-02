@@ -1,44 +1,59 @@
-typogrify: Filters to make web typography easier
-================================================================
+Typogrify: Filters that enhance web typography
+==============================================
 
 
-This application provides a set of custom filters for the Django
-template system which automatically apply various transformations to
-plain text in order to yield typographically-improved HTML.
+Typogrify provides a set of custom filters that automatically apply various
+transformations to plain text in order to yield typographically-improved HTML.
+While often used in conjunction with Jinja_ and Django_ template systems, the
+filters can be used in any environment.
+
+.._ Jinja: http://jinja.pocoo.org/
+.._ Django: https://www.djangoproject.com/
 
 
-Version 2 changes
------------------
+Installation
+============
 
-* Django is no longer a requirement. The typogrify filters can be used in any
-  environment by importing them from typogrify.filters
-* Experimental jinja2 support added in typogrify.templatetags.jinja_filters –
-  untested and defintely needs some eyes on it. Might trigger a point release
-  soon to update.
+The following command will install via `pip`. Pay particular attention to the
+package name::
+
+    pip install typogrified
+
+Alternatively, you can run the following command inside the project's root
+directory::
+
+    python setup.py install
+
+Last but not least, you can simply move the enclosed ``typogrify`` folder
+into your Python path.
 
 
 Requirements
 ============
 
-``typogrify`` is a set of functions that take text or html input and mark them up with HTML.
-it requires `the Python port of John Gruber's SmartyPants`_ for tokenization.
+Python 2.3 and above is supported, including Python 3. The only dependency is
+SmartyPants_, a Python port of a project by John Gruber.
 
-It includes optional template filters for Django. So you'll need Django if you want to use those.
+Installing Jinja_ or Django_ is only required if you intend to use the optional
+template filters that are included for those frameworks.
 
-.._ The Python port of John Gruber's SmartyPants: http://web.chad.org/projects/smartypants.py/
+.._ SmartyPants: http://web.chad.org/projects/smartypants.py/
 
 
-To use with Django
-==================
+Usage
+=====
 
-BACKWARDS INCOMPATIBILTY NOTE: Version 2 of typogrify has moved the typogrify
-tag to {% load typogrify_tags %} – This necessary to allow the tags files to
-import from the rest of the library.
+The filters can be used in any environment by importing them from
+``typogrify.filters``::
 
-Once ``typogrify`` is installed on your system, you can add it to the
-``INSTALLED_APPS`` setting of any Django project in which you wish to
-use it, and then use ``{% load typogrify_tags %}`` in your templates to
-load the filters it provides.
+    from typogrify.filters import typogrify
+    content = typogrify(content)
+
+For use with Django, you can add ``typogrify`` to the ``INSTALLED_APPS`` setting
+of any Django project in which you wish to use it, and then use
+``{% load typogrify_tags %}`` in your templates to load the filters it provides.
+
+Experimental support for Jinja is in ``typogrify.templatetags.jinja_filters``.
 
 
 Included filters
