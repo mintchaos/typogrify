@@ -1,23 +1,19 @@
-Typogrify: Filters that enhance web typography
-==============================================
-
-
 Typogrify provides a set of custom filters that automatically apply various
 transformations to plain text in order to yield typographically-improved HTML.
 While often used in conjunction with Jinja_ and Django_ template systems, the
 filters can be used in any environment.
 
-.._ Jinja: http://jinja.pocoo.org/
-.._ Django: https://www.djangoproject.com/
+.. _Jinja: http://jinja.pocoo.org/
+.. _Django: https://www.djangoproject.com/
 
 
 Installation
 ============
 
-The following command will install via `pip`. Pay particular attention to the
+The following command will install via ``pip``. Pay particular attention to the
 package name::
 
-    pip install typogrified
+    pip install typogrify-web
 
 Alternatively, you can run the following command inside the project's root
 directory::
@@ -37,7 +33,7 @@ SmartyPants_, a Python port of a project by John Gruber.
 Installing Jinja_ or Django_ is only required if you intend to use the optional
 template filters that are included for those frameworks.
 
-.._ SmartyPants: http://web.chad.org/projects/smartypants.py/
+.. _SmartyPants: http://web.chad.org/projects/smartypants.py/
 
 
 Usage

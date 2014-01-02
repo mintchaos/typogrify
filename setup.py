@@ -3,8 +3,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='typogrified',
-    version='0.0.0',
+    name='typogrify-web',
+    version=__import__('typogrify').__version__,
     packages=find_packages(),
     author='Justin Mayer',
     author_email='entroP@gmail.com',
