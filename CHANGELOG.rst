@@ -1,8 +1,8 @@
 Changelog
 =========
 
-In development
---------------
+0.1.0 (2014-01-03)
+------------------
 
 - fork project due to need for more frequent updates
 - add Python 3 compatibility
