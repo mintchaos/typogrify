@@ -13,7 +13,7 @@ Installation
 The following command will install via ``pip``. Pay particular attention to the
 package name::
 
-    pip install typogrify-web
+    pip install typogrify
 
 Alternatively, you can run the following command inside the project's root
 directory::
