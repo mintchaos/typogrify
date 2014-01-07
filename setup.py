@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='typogrify-web',
+    name='typogrify',
     version=__import__('typogrify').__version__,
     packages=find_packages(),
     author='Christian Metts, Justin Mayer, Chris Drackett',
