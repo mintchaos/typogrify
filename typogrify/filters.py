@@ -5,6 +5,54 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def process_ignores(text, ignore_tags):
+    """Creates a list of dictionaries based on regex matches of 
+    ignore_tags. The dictionary key will be set to 'ignore' for
+    matches of ignore_tags, and will be set to 'process' for    
+    non_matches"""
+
+    if type(ignore_tags).__name__ == 'list' and ignore_tags == []:
+        return [{'process':text}]
+
+    textl = [] 
+    if type(ignore_tags).__name__ != 'list':
+        ignore_tags = []
+
+    # This list acts as default tags to ignore. 
+    # add additional default tags to this list if
+    # needed
+    ignore_tags[0:0] = ['pre','code']
+
+    try:
+        process_ignores.ignore_tags
+    except AttributeError:
+        process_ignores.ignore_tags = []
+
+    if process_ignores.ignore_tags != ignore_tags:
+        process_ignores.ignore_tags = ignore_tags
+        ignore_re = r""
+        for tag in process_ignores.ignore_tags:
+            ignore_re += "<"+tag+">.*?</"+tag+">|"
+
+        ignore_re = ignore_re[:-1]	
+        process_ignores.ignore_re = re.compile(ignore_re, re.IGNORECASE)
+
+    ignore = process_ignores.ignore_re.finditer(text)
+    start_pos=0
+    end_pos=0
+
+    for ignore_match in ignore:
+        end_pos=ignore_match.start()
+        if end_pos > start_pos:
+            textl.append({'process':text[start_pos:end_pos]})
+        textl.append({'ignore':ignore_match.group(0)})
+
+        start_pos = ignore_match.end()
+
+    if start_pos < len(text):
+        textl.append({'process':text[start_pos:]})
+
+    return textl
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -104,7 +152,10 @@ def caps(text):
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
-    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
+    # Add additional tags whose content should be
+    # ignored here. Note - <pre> and <code> tag are 
+    # ignored by default and therefore are not here
+    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script)[^>]*>", re.IGNORECASE)
 
     for token in tokens:
         if token[0] == "tag":
@@ -190,23 +241,38 @@ def titlecase(text):
     else:
         return titlecase.titlecase(text)
 
-
-def typogrify(text):
-    """The super typography filter
-
-    Applies the following filters: widont, smartypants, caps, amp, initial_quotes
+def applyfilters(text):
+    """Applies the following filters: widont, smartypants, caps, amp, initial_quotes
 
     >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
     '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
-
     """
     text = amp(text)
     text = widont(text)
     text = smartypants(text)
     text = caps(text)
     text = initial_quotes(text)
+
     return text
 
+def typogrify(text, ignore_tags=None):
+    """The super typography filter 
+
+    Applies filters to text that are not in tags contained in the
+    ignore_tags list. By default, ignore_tags will include <pre> and <code>
+    tags. The text is parsed into a list containing items that must be processed
+    and items that should be ignored
+    """
+
+    text_list = process_ignores(text, ignore_tags)
+    text = ""    
+    for text_item in text_list:
+        if 'process' in text_item:
+            text += applyfilters(text_item['process'])
+        else:
+            text += text_item['ignore']
+
+    return text
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
