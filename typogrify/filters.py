@@ -104,7 +104,7 @@ def caps(text):
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
-    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
+    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math|title)[^>]*>", re.IGNORECASE)
 
     for token in tokens:
         if token[0] == "tag":
