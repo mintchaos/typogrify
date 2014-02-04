@@ -1,4 +1,4 @@
-from typogrify.filters import amp, caps, initial_quotes, smartypants, titlecase, typogrify, widont, TypogrifyError
+from typogrify.filters import amp, caps, initial_quotes, quotespace, smartypants, titlecase, typogrify, widont, TypogrifyError
 from functools import wraps
 from django.conf import settings
 from django import template
@@ -38,3 +38,4 @@ register.filter('smartypants', make_safe(smartypants))
 register.filter('titlecase', make_safe(titlecase))
 register.filter('typogrify', make_safe(typogrify))
 register.filter('widont', make_safe(widont))
+register.filter('quotespace', make_safe(quotespace))
