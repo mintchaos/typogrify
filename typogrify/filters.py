@@ -5,51 +5,50 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
-def process_ignores(text, ignore_tags):
-    """Creates a list of dictionaries based on regex matches of 
-    ignore_tags. The dictionary key will be set to 'ignore' for
-    matches of ignore_tags, and will be set to 'process' for    
-    non_matches"""
+def process_ignores(text, ignore_tags=None):
+    ''' Creates a list of tuples based on tags to be ignored.
+        Tags can be added as a list in the `ignore_tags`.
+        Returns in the following format:
 
-    textl = [] 
+        [
+            ('Text here', <should text be processed? True|False>),
+            ('Text here', <should text be processed? True|False>),
+        ]
+
+    '''
+
     if ignore_tags == None:
         ignore_tags = []
-    
-    # This list acts as default tags to ignore. 
-    # add additional default tags to this list if
-    # needed
-    ignore_tags[0:0] = ['pre','code'] 
 
-    try:
-        process_ignores.ignore_tags
-    except AttributeError:
-        process_ignores.ignore_tags = []
+    ignore_tags = ignore_tags + ['pre','code'] # default tags
 
-    if process_ignores.ignore_tags != ignore_tags:
-        process_ignores.ignore_tags = ignore_tags
-        ignore_re = r""
-        for tag in process_ignores.ignore_tags:
-            ignore_re += "<"+tag+">.*?</"+tag+">|"
+    ignore_re = r""
+    for tag in ignore_tags:
+        ignore_re += "<"+tag+">.*?</"+tag+">|"
+    ignore_re = ignore_re[:-1] # remove the last `|`
 
-        ignore_re = ignore_re[:-1]
-        process_ignores.ignore_re = re.compile(ignore_re, re.IGNORECASE)
+    ignore_finder = re.compile(ignore_re, re.IGNORECASE)
 
-    ignore = process_ignores.ignore_re.finditer(text)
-    start_pos=0
-    end_pos=0
+    raw_ignore = ignore_finder.finditer(text)
 
-    for ignore_match in ignore:
-        end_pos=ignore_match.start()
-        if end_pos > start_pos:
-            textl.append({'process':text[start_pos:end_pos]})
-        textl.append({'ignore':ignore_match.group(0)})
+    position = 0
+    sections = []
+    for section in raw_ignore:
+        start,end = section.span()
 
-        start_pos = ignore_match.end()
+        if position != start:
+            # if the current position isn't the match we need to process everything in between
+            sections.append((text[position:start], True))
 
-    if start_pos < len(text):
-        textl.append({'process':text[start_pos:]})
+        # now we mark the matched section as ignored
+        sections.append((text[start:end], False))
 
-    return textl
+        position = end
+
+    # match the rest of the text (this could in fact be the entire string)
+    sections.append((text[position:len(text)], True))
+
+    return sections
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -150,7 +149,7 @@ def caps(text):
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
     # Add additional tags whose content should be
-    # ignored here. Note - <pre> and <code> tag are 
+    # ignored here. Note - <pre> and <code> tag are
     # ignored by default and therefore are not here
     tags_to_skip_regex = re.compile("<(/)?(?:kbd|script)[^>]*>", re.IGNORECASE)
 
@@ -238,39 +237,6 @@ def titlecase(text):
     else:
         return titlecase.titlecase(text)
 
-def applyfilters(text):
-    """Applies the following filters: widont, smartypants, caps, amp, initial_quotes
-
-    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
-    """
-    text = amp(text)
-    text = widont(text)
-    text = smartypants(text)
-    text = caps(text)
-    text = initial_quotes(text)
-
-    return text
-
-def typogrify(text, ignore_tags=None):
-    """The super typography filter 
-
-    Applies filters to text that are not in tags contained in the
-    ignore_tags list. By default, ignore_tags will include <pre> and <code>
-    tags. The text is parsed into a list containing items that must be processed
-    and items that should be ignored
-    """
-
-    text_list = process_ignores(text, ignore_tags)
-    text = ""
-    for text_item in text_list:
-        if 'process' in text_item:
-            text += applyfilters(text_item['process'])
-        else:
-            text += text_item['ignore']
-
-    return text
-
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
     Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for
@@ -311,6 +277,7 @@ def widont(text):
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
+
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
                                    \s+                                             # the space to replace
                                    ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
@@ -319,8 +286,40 @@ def widont(text):
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
     output = widont_finder.sub(r'\1&nbsp;\2', text)
+
     return output
 
+def applyfilters(text):
+    """Applies the following filters: smartypants, caps, amp, initial_quotes
+
+    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
+    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    """
+    text = amp(text)
+    text = smartypants(text)
+    text = caps(text)
+    text = initial_quotes(text)
+
+    return text
+
+def typogrify(text, ignore_tags=None):
+    """The super typography filter
+
+        Applies filters to text that are not in tags contained in the
+        ignore_tags list.
+    """
+
+    section_list = process_ignores(text, ignore_tags)
+
+    rendered_text = ""
+    for text_item, should_process in section_list:
+        if should_process:
+            rendered_text += applyfilters(text_item)
+        else:
+            rendered_text += text_item
+
+    # apply widont at the end, as its already smart about tags. Hopefully.
+    return widont(rendered_text)
 
 def _test():
     import doctest
