@@ -45,21 +45,6 @@ The filters can be used in any environment by importing them from
     from typogrify.filters import typogrify
     content = typogrify(content)
 
-All content within ``<pre>`` and ``<code>`` tags will not be
-processed by default. There is an optional second argument that 
-lets one incorporate additional tags whose content will be
-ignored. Assuming in addition to ``<pre>`` and ``<code>``, 
-``<math>`` should also be ignored::
-
-    from typogrify.filters import typogrify
-    content = typogrify(content, ["math"])
-
-Seeing as this argument is a list, it can be used to ignore
-multiple tags::
-
-    from typogrify.filters import typogrify
-    content = typogrify(content, ["list","of","tags"])
-
 For use with Django, you can add ``typogrify`` to the ``INSTALLED_APPS`` setting
 of any Django project in which you wish to use it, and then use
 ``{% load typogrify_tags %}`` in your templates to load the filters it provides.
