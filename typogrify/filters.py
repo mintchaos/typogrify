@@ -5,6 +5,50 @@ class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
     pass
 
+def process_ignores(text, ignore_tags=None):
+    ''' Creates a list of tuples based on tags to be ignored.
+        Tags can be added as a list in the `ignore_tags`.
+        Returns in the following format:
+
+        [
+            ('Text here', <should text be processed? True|False>),
+            ('Text here', <should text be processed? True|False>),
+        ]
+
+    '''
+
+    if ignore_tags == None:
+        ignore_tags = []
+
+    ignore_tags = ignore_tags + ['pre','code'] # default tags
+
+    ignore_re = r""
+    for tag in ignore_tags:
+        ignore_re += "<"+tag+">.*?</"+tag+">|"
+    ignore_re = ignore_re[:-1] # remove the last `|`
+
+    ignore_finder = re.compile(ignore_re, re.IGNORECASE)
+
+    raw_ignore = ignore_finder.finditer(text)
+
+    position = 0
+    sections = []
+    for section in raw_ignore:
+        start,end = section.span()
+
+        if position != start:
+            # if the current position isn't the match we need to process everything in between
+            sections.append((text[position:start], True))
+
+        # now we mark the matched section as ignored
+        sections.append((text[start:end], False))
+
+        position = end
+
+    # match the rest of the text (this could in fact be the entire string)
+    sections.append((text[position:len(text)], True))
+
+    return sections
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -104,7 +148,10 @@ def caps(text):
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
-    tags_to_skip_regex = re.compile("<(/)?(?:pre|code|kbd|script|math)[^>]*>", re.IGNORECASE)
+    # Add additional tags whose content should be
+    # ignored here. Note - <pre> and <code> tag are
+    # ignored by default and therefore are not here
+    tags_to_skip_regex = re.compile("<(/)?(?:kbd|script)[^>]*>", re.IGNORECASE)
 
     for token in tokens:
         if token[0] == "tag":
@@ -190,24 +237,6 @@ def titlecase(text):
     else:
         return titlecase.titlecase(text)
 
-
-def typogrify(text):
-    """The super typography filter
-
-    Applies the following filters: widont, smartypants, caps, amp, initial_quotes
-
-    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
-
-    """
-    text = amp(text)
-    text = widont(text)
-    text = smartypants(text)
-    text = caps(text)
-    text = initial_quotes(text)
-    return text
-
-
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
     Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for
@@ -248,6 +277,7 @@ def widont(text):
     >>> widont('<div><p>But divs with paragraphs do!</p></div>')
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
+
     widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
                                    \s+                                             # the space to replace
                                    ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
@@ -256,8 +286,40 @@ def widont(text):
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
                                    """, re.VERBOSE)
     output = widont_finder.sub(r'\1&nbsp;\2', text)
+
     return output
 
+def applyfilters(text):
+    """Applies the following filters: smartypants, caps, amp, initial_quotes
+
+    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
+    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    """
+    text = amp(text)
+    text = smartypants(text)
+    text = caps(text)
+    text = initial_quotes(text)
+
+    return text
+
+def typogrify(text, ignore_tags=None):
+    """The super typography filter
+
+        Applies filters to text that are not in tags contained in the
+        ignore_tags list.
+    """
+
+    section_list = process_ignores(text, ignore_tags)
+
+    rendered_text = ""
+    for text_item, should_process in section_list:
+        if should_process:
+            rendered_text += applyfilters(text_item)
+        else:
+            rendered_text += text_item
+
+    # apply widont at the end, as its already smart about tags. Hopefully.
+    return widont(rendered_text)
 
 def _test():
     import doctest
