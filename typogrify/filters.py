@@ -27,7 +27,7 @@ def process_ignores(text, ignore_tags=None):
         ignore_re += "<"+tag+">.*?</"+tag+">|"
     ignore_re = ignore_re[:-1] # remove the last `|`
 
-    ignore_finder = re.compile(ignore_re, re.IGNORECASE)
+    ignore_finder = re.compile(ignore_re, re.IGNORECASE | re.DOTALL)
 
     raw_ignore = ignore_finder.finditer(text)
 
