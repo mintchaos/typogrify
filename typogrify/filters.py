@@ -6,38 +6,38 @@ class TypogrifyError(Exception):
     pass
 
 def process_ignores(text, ignore_tags=None):
-    ''' Creates a list of tuples based on tags to be ignored.
-        Tags can be added as a list in the `ignore_tags`.
-        Returns in the following format:
+    """ Creates a list of tuples based on tags to be ignored.
+    Tags can be added as a list in the `ignore_tags`.
+    Returns in the following format:
 
-        [
-            ('Text here', <should text be processed? True|False>),
-            ('Text here', <should text be processed? True|False>),
-        ]
+    [
+        ('Text here', <should text be processed? True|False>),
+        ('Text here', <should text be processed? True|False>),
+    ]
 
-    '''
-
-    if ignore_tags == None:
-        ignore_tags = []
-
-    ignore_tags = ignore_tags + ['pre','code'] # default tags
-
-    ignore_re = r""
-    for tag in ignore_tags:
-        ignore_re += "<"+tag+">.*?</"+tag+">|"
-    ignore_re = ignore_re[:-1] # remove the last `|`
-
-    ignore_finder = re.compile(ignore_re, re.IGNORECASE | re.DOTALL)
-
-    raw_ignore = ignore_finder.finditer(text)
+    >>> process_ignores('<pre>processed</pre><p>processed</p>')
+    [('<pre>processed</pre>', False), ('<p>processed</p>', True)]
+    >>> process_ignores('<code>processed</code><p>processed<pre>processed</pre></p>')
+    [('<code>processed</code>', False), ('<p>processed', True), ('<pre>processed</pre>', False), ('</p>', True)]
+    >>> process_ignores('<code>processed</code><p>processed<pre>processed</pre></p>',['p'])
+    [('<code>processed</code>', False), ('<p>processed<pre>processed</pre></p>', False)]
+    """
 
     position = 0
     sections = []
-    for section in raw_ignore:
-        start,end = section.span()
+    if ignore_tags is None:
+        ignore_tags = []
+
+    ignore_tags = ignore_tags + ['pre', 'code']  # default tags
+    ignoreregex = r'<(%s)\s?.*?>.*?</(\1)>' % '|'.join(ignore_tags)
+    ignore_finder = re.compile(ignoreregex, re.IGNORECASE | re.DOTALL)
+
+    for section in ignore_finder.finditer(text):
+        start, end = section.span()
 
         if position != start:
-            # if the current position isn't the match we need to process everything in between
+            # if the current position isn't the match we
+            # need to process everything in between
             sections.append((text[position:start], True))
 
         # now we mark the matched section as ignored
@@ -45,8 +45,10 @@ def process_ignores(text, ignore_tags=None):
 
         position = end
 
-    # match the rest of the text (this could in fact be the entire string)
-    sections.append((text[position:len(text)], True))
+    # match the rest of the text if necessary 
+    # (this could in fact be the entire string)
+    if position < len(text):
+        sections.append((text[position:len(text)], True))
 
     return sections
 
