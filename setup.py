@@ -7,7 +7,7 @@ setup(
     version=__import__('typogrify').__version__,
     packages=find_packages(),
     author='Christian Metts, Justin Mayer, Chris Drackett',
-    author_email='entroP@gmail.com',
+    author_email='chris@tiltshiftstudio.com',
     license='BSD',
     description='Filters to enhance web typography, including support for Django & Jinja templates',
     long_description=open('README.rst').read(),
@@ -23,6 +23,8 @@ setup(
         'Framework :: Flask',
         'Topic :: Utilities'
     ],
-
-    install_requires=['smartypants>=1.6']
+    install_requires=[
+        'smartypants>=1.8.3',
+        'titlecase==0.5.1'
+    ],
 )
