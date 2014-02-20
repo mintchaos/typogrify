@@ -1,5 +1,5 @@
 import re
-
+from typogrify.packages import titlecase as TITLECASE
 
 class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
@@ -45,7 +45,7 @@ def process_ignores(text, ignore_tags=None):
 
         position = end
 
-    # match the rest of the text if necessary 
+    # match the rest of the text if necessary
     # (this could in fact be the entire string)
     if position < len(text):
         sections.append((text[position:len(text)], True))
@@ -232,12 +232,7 @@ def titlecase(text):
     >>> titlecase("this is just an example.com")
     'This Is Just an example.com'
     """
-    try:
-        import titlecase
-    except ImportError:
-        raise TypogrifyError("Error in {% titlecase %} filter: The titlecase.py library isn't installed.")
-    else:
-        return titlecase.titlecase(text)
+    return TITLECASE.titlecase(text)
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
