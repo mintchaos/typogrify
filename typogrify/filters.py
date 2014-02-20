@@ -29,8 +29,8 @@ def process_ignores(text, ignore_tags=None):
         ignore_tags = []
 
     ignore_tags = ignore_tags + ['pre', 'code']  # default tags
-    ignoreregex = r'<(%s).*?>.*?</(\1)>' % '|'.join(ignore_tags)
-    ignore_finder = re.compile(ignoreregex, re.IGNORECASE | re.DOTALL)
+    ignore_regex = r'<(%s)(?:\s.*?)?>.*?</(\1)>' % '|'.join(ignore_tags)
+    ignore_finder = re.compile(ignore_regex, re.IGNORECASE | re.DOTALL)
 
     for section in ignore_finder.finditer(text):
         start, end = section.span()
