@@ -1,5 +1,5 @@
 import re
-from typogrify.packages import titlecase as TITLECASE
+from typogrify.packages.titlecase import titlecase  # NOQA
 
 class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
@@ -222,17 +222,6 @@ def smartypants(text):
         output = smartypants.smartypants(text)
         return output
 
-
-def titlecase(text):
-    """Support for titlecase.py's titlecasing
-
-    >>> titlecase("this V that")
-    'This v That'
-
-    >>> titlecase("this is just an example.com")
-    'This Is Just an example.com'
-    """
-    return TITLECASE.titlecase(text)
 
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
