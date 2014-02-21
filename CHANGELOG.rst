@@ -9,9 +9,11 @@ Changelog
 - packaging improvements, including binary wheels
 
 2.0.2 | 2.0.3
+-------------
 
 - adding support for custom ignore tags.
 
 2.0.4 (2014-02-21)
+------------------
 
 - moving titlecase into the project
