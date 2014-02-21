@@ -6,4 +6,4 @@ python:
 install:
  - "pip install ."
 script:
- - "python -m typogrify.packages.titlecase.tests"
+    - "nosetests --with-doctest -I typogrify_tags.py -I jinja_filters.py"
