@@ -226,7 +226,10 @@ def smartypants(text):
 def widont(text):
     """Replaces the space between the last two words in a string with ``&nbsp;``
     Works in these block tags ``(h1-h6, p, li, dd, dt)`` and also accounts for
-    potential closing inline elements ``a, em, strong, span, b, i``
+    potential closing inline elements ``a, em, strong, span, b, i``.
+
+    It also replaces a space after short words (1-3 letters) at the beginning
+    of a string with ``&nbsp;``.
 
     >>> widont('A very simple test')
     'A very simple&nbsp;test'
@@ -264,16 +267,30 @@ def widont(text):
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
 
-    widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
-                                   \s+                                             # the space to replace
-                                   ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
-                                   \s*                                             # optional white space!
-                                   (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
-                                   ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
-                                   """, re.VERBOSE)
-    output = widont_finder.sub(r'\1&nbsp;\2', text)
+    widont_finder_end = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
+                                       \s+                                             # the space to replace
+                                       ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
+                                       \s*                                             # optional white space!
+                                       (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
+                                       ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
+                                       """, re.VERBOSE)
+    text = widont_finder_end.sub(r'\1&nbsp;\2', text)
 
-    return output
+    widont_finder_start = re.compile(r"""
+        (                                             # first part
+            (?:<(?:p|h[1-6]|li|dt|dd)>|^)             # must be proceeded by one of these opening tags: p, h1-6, li, dt, tt or beginning of string
+            \s*                                       # optional white space
+            (?:<(?:a|em|span|strong|i|b)>\s*)*        # optional opening inline tags with optional white space after each
+            [^<>\s]{1,3}                              # a word with 1-3 letters
+        )
+        \s+                                           # space to replace
+        (                                             # second part
+            [^<>\s]+                                  # some other word has to follow it
+        )
+    """, re.VERBOSE)
+    text = widont_finder_start.sub(r'\1&nbsp;\2', text)
+
+    return text
 
 def applyfilters(text):
     """Applies the following filters: smartypants, caps, amp, initial_quotes
