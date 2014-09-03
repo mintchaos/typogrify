@@ -7,7 +7,12 @@ class TypogrifyError(Exception):
 
 def process_ignores(text, ignore_tags=None):
     """ Creates a list of tuples based on tags to be ignored.
-    Tags can be added as a list in the `ignore_tags`.
+    Tags can be added as a list in the `ignore_tags`. Tags
+    can also be filtered on id and class using CSS notation.
+    For example, div#test (div with id='test'), div.test
+    (div with class='test'), #test (any tag with id='test')
+    or .test (any tag with class='test'). 
+    
     Returns in the following format:
 
     [
@@ -21,17 +26,69 @@ def process_ignores(text, ignore_tags=None):
     [('<code>processed</code>', False), ('<p>processed', True), ('<pre>processed</pre>', False), ('</p>', True)]
     >>> process_ignores('<code>processed</code><p>processed<pre>processed</pre></p>',['p'])
     [('<code>processed</code>', False), ('<p>processed<pre>processed</pre></p>', False)]
+    >>> process_ignores('<span class="test">processed</span><span>processed<div>processed</div></span>',['div', 'span.test'])
+    [('<span class="test">processed</span>', False), ('<span>processed', True), ('<div>processed</div>', False), ('</span>', True)]
+    >>> process_ignores('<span class="TeSt">processed</span><span>processed<div>processed</div></span>',['div', '.test'])
+    [('<span class="TeSt">processed</span>', False), ('<span>processed', True), ('<div>processed</div>', False), ('</span>', True)]
+    >>> process_ignores('<span class="test">processed</span><span>processed<div>processed</div></span>',['div', '#test'])
+    [('<span class="test">processed</span><span>processed', True), ('<div>processed</div>', False), ('</span>', True)]
+    >>> process_ignores('<span id = "test">processed</span><span>processed<div>processed</div></span>',['div', 'span#test'])
+    [('<span id = "test">processed</span>', False), ('<span>processed', True), ('<div>processed</div>', False), ('</span>', True)]
+    >>> process_ignores('<span extra class="test" extra>processed</span><span>processed<div class="test">processed</div></span>',['div', 'span.test'])
+    [('<span extra class="test" extra>processed</span>', False), ('<span>processed', True), ('<div class="test">processed</div>', False), ('</span>', True)]
+    >>> process_ignores('<span e x t r a class="test" extra>processed</span><span>processed<div class="test">processed</div></span>',['.test'])
+    [('<span e x t r a class="test" extra>processed</span>', False), ('<span>processed', True), ('<div class="test">processed</div>', False), ('</span>', True)]
     """
 
+    def _filter_tag(match):
+        """Process user tag filters in regex sub"""
+
+        tag = match.group(1) if match.group(1) != '' else '[^\s.#<>]+'
+        attribute = 'class' if match.group(2)[0] == '.' else 'id'
+        attribute_value = match.group(2)[1:]
+        _filter_tag.group += 1
+
+        result = r"""
+                 (?: {tag}
+                 (?= [^>]*?
+                 {attribute} \s*=\s*
+                 (['"]) {attribute_value} \{0}
+                 ))""".format(_filter_tag.group, **locals())
+       
+        return result
+    
+    _filter_tag.group = 1
     position = 0
     sections = []
+
     if ignore_tags is None:
         ignore_tags = []
 
-    ignore_tags = ignore_tags + ['pre', 'code']  # default tags
-    ignore_regex = r'<(%s)(?:\s.*?)?>.*?</(\1)>' % '|'.join(ignore_tags)
-    ignore_finder = re.compile(ignore_regex, re.IGNORECASE | re.DOTALL)
+    # make ignore_tags unique and have 'pre' and 'code' as default
+    ignore_tags = set(map(lambda x: x.strip(), ignore_tags) + ['pre', 'code'])
 
+    # classify tags
+    non_filtered_tags = filter(lambda x: '.' not in x and '#' not in x, ignore_tags)
+    generic_filtered_tags = filter(lambda x: x.startswith(('.','#')), ignore_tags)
+    filtered_tags = list(ignore_tags-set(non_filtered_tags + generic_filtered_tags))
+
+    # remove redundancy from filtered_tags
+    filtered_tags = filter(lambda x: not any(tag in x for tag in generic_filtered_tags),
+                    filtered_tags)
+    filtered_tags = filter(lambda x: not any(tag in x for tag in non_filtered_tags),
+                    filtered_tags)
+
+    # alter the tags that must be filtered for the regex
+    sub = lambda tag: re.sub(r'^([^\s.#<>]*)([.#][^\s.#<>]+)$', _filter_tag, tag)
+    generic_filtered_tags = map(sub, generic_filtered_tags)
+    filtered_tags = map(sub, filtered_tags)
+
+    # create regex
+    ignore_tags = non_filtered_tags + generic_filtered_tags + filtered_tags
+    ignore_regex = r'(?:<(%s)[^>]*>.*?</\1>)' % '|'.join(ignore_tags)
+    ignore_finder = re.compile(ignore_regex, re.IGNORECASE | re.DOTALL | re.VERBOSE)
+
+    # process regex
     for section in ignore_finder.finditer(text):
         start, end = section.span()
 
@@ -103,8 +160,8 @@ def caps(text):
 
     Uses the smartypants tokenizer to not screw with HTML or with tags it shouldn't.
 
-    >>> caps("<PRE>CAPS</pre> more CAPS")
-    '<PRE>CAPS</pre> more <span class="caps">CAPS</span>'
+    >>> caps("<SCRIPT>CAPS</script> more CAPS")
+    '<SCRIPT>CAPS</script> more <span class="caps">CAPS</span>'
 
     >>> caps("A message from 2KU2 with digits")
     'A message from <span class="caps">2KU2</span> with digits'
