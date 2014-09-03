@@ -342,6 +342,7 @@ def applyfilters(text):
     text = smartypants(text)
     text = caps(text)
     text = initial_quotes(text)
+    text = widont(text)
 
     return text
 
@@ -361,8 +362,7 @@ def typogrify(text, ignore_tags=None):
         else:
             rendered_text += text_item
 
-    # apply widont at the end, as its already smart about tags. Hopefully.
-    return widont(rendered_text)
+    return rendered_text
 
 def _test():
     import doctest
