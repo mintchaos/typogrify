@@ -22,6 +22,8 @@ def process_ignores(text, ignore_tags=None):
 
     >>> process_ignores('<pre>processed</pre><p>processed</p>')
     [('<pre>processed</pre>', False), ('<p>processed</p>', True)]
+    >>> process_ignores('<script type="javascript" extra>processed<p>processed</p></script>')
+    [('<script type="javascript" extra>processed<p>processed</p></script>', False)]
     >>> process_ignores('<code>processed</code><p>processed<pre>processed</pre></p>')
     [('<code>processed</code>', False), ('<p>processed', True), ('<pre>processed</pre>', False), ('</p>', True)]
     >>> process_ignores('<code>processed</code><p>processed<pre>processed</pre></p>',['p'])
@@ -49,11 +51,11 @@ def process_ignores(text, ignore_tags=None):
         _filter_tag.group += 1
 
         result = r"""
-                 (?: {tag}
-                 (?= [^>]*?
+                 {tag}
+                 (?= [^>]*?  # Lookahead assertion
                  {attribute} \s*=\s*
                  (['"]) {attribute_value} \{0}
-                 ))""".format(_filter_tag.group, **locals())
+                 )""".format(_filter_tag.group, **locals())
        
         return result
     
@@ -64,8 +66,8 @@ def process_ignores(text, ignore_tags=None):
     if ignore_tags is None:
         ignore_tags = []
 
-    # make ignore_tags unique and have 'pre' and 'code' as default
-    ignore_tags = set(map(lambda x: x.strip(), ignore_tags) + ['pre', 'code'])
+    # make ignore_tags unique and have 'pre', 'code', 'script' and 'kbd' as default
+    ignore_tags = set(map(lambda x: x.strip(), ignore_tags) + ['pre', 'code', 'script', 'kbd'])
 
     # classify tags
     non_filtered_tags = filter(lambda x: '.' not in x and '#' not in x, ignore_tags)
@@ -158,11 +160,6 @@ def caps(text):
     >>> caps("A message from KU")
     'A message from <span class="caps">KU</span>'
 
-    Uses the smartypants tokenizer to not screw with HTML or with tags it shouldn't.
-
-    >>> caps("<SCRIPT>CAPS</script> more CAPS")
-    '<SCRIPT>CAPS</script> more <span class="caps">CAPS</span>'
-
     >>> caps("A message from 2KU2 with digits")
     'A message from <span class="caps">2KU2</span> with digits'
 
@@ -183,7 +180,6 @@ def caps(text):
 
     tokens = smartypants._tokenize(text)
     result = []
-    in_skipped_tag = False
 
     cap_finder = re.compile(r"""(
                             (\b[A-Z\d]*        # Group 2: Any amount of caps and digits
@@ -207,25 +203,13 @@ def caps(text):
                 tail = ''
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
-    # Add additional tags whose content should be
-    # ignored here. Note - <pre> and <code> tag are
-    # ignored by default and therefore are not here
-    tags_to_skip_regex = re.compile("<(/)?(?:kbd|script)[^>]*>", re.IGNORECASE)
-
     for token in tokens:
         if token[0] == "tag":
-            # Don't mess with tags.
+            # Don't mess with tags
             result.append(token[1])
-            close_match = tags_to_skip_regex.match(token[1])
-            if close_match and close_match.group(1) == None:
-                in_skipped_tag = True
-            else:
-                in_skipped_tag = False
         else:
-            if in_skipped_tag:
-                result.append(token[1])
-            else:
-                result.append(cap_finder.sub(_cap_wrapper, token[1]))
+            result.append(cap_finder.sub(_cap_wrapper, token[1]))
+
     output = "".join(result)
     return output
 
@@ -332,12 +316,13 @@ def widont(text):
 
     return output
 
-def applyfilters(text):
+def apply_filters(text):
     """Applies the following filters: smartypants, caps, amp, initial_quotes
 
-    >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
-    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
+    >>> apply_filters('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
+    '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely obnoxiously</h2>'
     """
+
     text = amp(text)
     text = smartypants(text)
     text = caps(text)
@@ -348,16 +333,26 @@ def applyfilters(text):
 def typogrify(text, ignore_tags=None):
     """The super typography filter
 
-        Applies filters to text that are not in tags contained in the
-        ignore_tags list.
+       Applies filters to text that are not in tags contained in the
+       ignore_tags list.
+
+       Uses the smartypants tokenizer to not screw with HTML
+
+       Script and kbd tags are left alone
+       >>> typogrify("<SCRIPT>CAPS</script> more CAPS <kbd>CAPS AGAIN</KBD>")
+       '<SCRIPT>CAPS</script> more <span class="caps">CAPS</span> <kbd>CAPS AGAIN</KBD>'
+    
+       Will use widont to add &nbsp; to the last two words
+       >>> typogrify('<h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>')
+       '<h2><span class="dquo">&#8220;</span>Jayhawks&#8221; <span class="amp">&amp;</span> <span class="caps">KU</span> fans act extremely&nbsp;obnoxiously</h2>'
     """
 
     section_list = process_ignores(text, ignore_tags)
-
     rendered_text = ""
+
     for text_item, should_process in section_list:
         if should_process:
-            rendered_text += applyfilters(text_item)
+            rendered_text += apply_filters(text_item)
         else:
             rendered_text += text_item
 
