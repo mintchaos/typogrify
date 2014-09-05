@@ -65,7 +65,7 @@ def process_ignores(text, ignore_tags=None):
         ignore_tags = []
 
     # make ignore_tags unique and have 'pre' and 'code' as default
-    ignore_tags = set(map(lambda x: x.strip(), ignore_tags) + ['pre', 'code'])
+    ignore_tags = set(list(map(lambda x: x.strip(), ignore_tags)) + ['pre', 'code'])
 
     # classify tags
     non_filtered_tags = filter(lambda x: '.' not in x and '#' not in x, ignore_tags)
@@ -80,8 +80,8 @@ def process_ignores(text, ignore_tags=None):
 
     # alter the tags that must be filtered for the regex
     sub = lambda tag: re.sub(r'^([^\s.#<>]*)([.#][^\s.#<>]+)$', _filter_tag, tag)
-    generic_filtered_tags = map(sub, generic_filtered_tags)
-    filtered_tags = map(sub, filtered_tags)
+    generic_filtered_tags = list(map(sub, generic_filtered_tags))
+    filtered_tags = list(map(sub, filtered_tags))
 
     # create regex
     ignore_tags = non_filtered_tags + generic_filtered_tags + filtered_tags
