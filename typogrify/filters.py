@@ -68,8 +68,8 @@ def process_ignores(text, ignore_tags=None):
     ignore_tags = set(list(map(lambda x: x.strip(), ignore_tags)) + ['pre', 'code'])
 
     # classify tags
-    non_filtered_tags = filter(lambda x: '.' not in x and '#' not in x, ignore_tags)
-    generic_filtered_tags = filter(lambda x: x.startswith(('.','#')), ignore_tags)
+    non_filtered_tags = list(filter(lambda x: '.' not in x and '#' not in x, ignore_tags))
+    generic_filtered_tags = list(filter(lambda x: x.startswith(('.','#')), ignore_tags))
     filtered_tags = list(ignore_tags-set(non_filtered_tags + generic_filtered_tags))
 
     # remove redundancy from filtered_tags
