@@ -1,15 +1,26 @@
 Changelog
 =========
 
+2.0.6 | 2.0.7
+-------------
+
+- address Python 3 compatibility regression
+
+2.0.5 (2014-09-03)
+------------------
+
+- enhance ignore_tags granularity: tags can be filtered on id and class using
+  CSS notation
+
 2.0.4 (2014-02-21)
 ------------------
 
-- moving titlecase into the project
+- move titlecase into the project
 
 2.0.2 | 2.0.3
 -------------
 
-- adding support for custom ignore tags.
+- add support for custom ignore tags.
 
 0.1.0 (2014-01-03)
 ------------------
