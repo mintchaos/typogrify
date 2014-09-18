@@ -65,12 +65,12 @@ def process_ignores(text, ignore_tags=None):
         ignore_tags = []
 
     # make ignore_tags unique and have 'pre' and 'code' as default
-    ignore_tags = set(list(map(lambda x: x.strip(), ignore_tags)) + ['pre', 'code'])
+    ignore_tags = set(map(lambda x: x.strip(), ignore_tags)) | set(['pre', 'code'])
 
     # classify tags
-    non_filtered_tags = filter(lambda x: '.' not in x and '#' not in x, ignore_tags)
-    generic_filtered_tags = filter(lambda x: x.startswith(('.','#')), ignore_tags)
-    filtered_tags = list(ignore_tags-set(non_filtered_tags + generic_filtered_tags))
+    non_filtered_tags = set(filter(lambda x: '.' not in x and '#' not in x, ignore_tags))
+    generic_filtered_tags = set(filter(lambda x: x.startswith(('.','#')), ignore_tags))
+    filtered_tags = ignore_tags-(non_filtered_tags | generic_filtered_tags)
 
     # remove redundancy from filtered_tags
     filtered_tags = filter(lambda x: not any(tag in x for tag in generic_filtered_tags),
@@ -84,7 +84,7 @@ def process_ignores(text, ignore_tags=None):
     filtered_tags = list(map(sub, filtered_tags))
 
     # create regex
-    ignore_tags = non_filtered_tags + generic_filtered_tags + filtered_tags
+    ignore_tags = list(non_filtered_tags | set(generic_filtered_tags) | set(filtered_tags))
     ignore_regex = r'(?:<(%s)[^>]*>.*?</\1>)' % '|'.join(ignore_tags)
     ignore_finder = re.compile(ignore_regex, re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
