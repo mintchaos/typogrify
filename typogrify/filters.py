@@ -1,18 +1,21 @@
 import re
 from typogrify.packages.titlecase import titlecase  # NOQA
 
+
 class TypogrifyError(Exception):
     """ A base error class so we can catch or scilence typogrify's errors in templates """
+
     pass
 
+
 def process_ignores(text, ignore_tags=None):
-    """ Creates a list of tuples based on tags to be ignored.
+    """Creates a list of tuples based on tags to be ignored.
     Tags can be added as a list in the `ignore_tags`. Tags
     can also be filtered on id and class using CSS notation.
     For example, div#test (div with id='test'), div.test
     (div with class='test'), #test (any tag with id='test')
-    or .test (any tag with class='test'). 
-    
+    or .test (any tag with class='test').
+
     Returns in the following format:
 
     [
@@ -43,8 +46,8 @@ def process_ignores(text, ignore_tags=None):
     def _filter_tag(match):
         """Process user tag filters in regex sub"""
 
-        tag = match.group(1) if match.group(1) != '' else '[^\s.#<>]+'
-        attribute = 'class' if match.group(2)[0] == '.' else 'id'
+        tag = match.group(1) if match.group(1) != "" else r"[^\s.#<>]+"
+        attribute = "class" if match.group(2)[0] == "." else "id"
         attribute_value = match.group(2)[1:]
         _filter_tag.group += 1
 
@@ -53,10 +56,12 @@ def process_ignores(text, ignore_tags=None):
                  (?= [^>]*?
                  {attribute} \s*=\s*
                  (['"]) {attribute_value} \{0}
-                 ))""".format(_filter_tag.group, **locals())
-       
+                 ))""".format(
+            _filter_tag.group, **locals()
+        )
+
         return result
-    
+
     _filter_tag.group = 1
     position = 0
     sections = []
@@ -65,27 +70,33 @@ def process_ignores(text, ignore_tags=None):
         ignore_tags = []
 
     # make ignore_tags unique and have 'pre' and 'code' as default
-    ignore_tags = set(map(lambda x: x.strip(), ignore_tags)) | set(['pre', 'code'])
+    ignore_tags = set(map(lambda x: x.strip(), ignore_tags)) | set(["pre", "code"])
 
     # classify tags
-    non_filtered_tags = set(filter(lambda x: '.' not in x and '#' not in x, ignore_tags))
-    generic_filtered_tags = set(filter(lambda x: x.startswith(('.','#')), ignore_tags))
-    filtered_tags = ignore_tags-(non_filtered_tags | generic_filtered_tags)
+    non_filtered_tags = set(
+        filter(lambda x: "." not in x and "#" not in x, ignore_tags)
+    )
+    generic_filtered_tags = set(filter(lambda x: x.startswith((".", "#")), ignore_tags))
+    filtered_tags = ignore_tags - (non_filtered_tags | generic_filtered_tags)
 
     # remove redundancy from filtered_tags
-    filtered_tags = filter(lambda x: not any(tag in x for tag in generic_filtered_tags),
-                    filtered_tags)
-    filtered_tags = filter(lambda x: not any(tag in x for tag in non_filtered_tags),
-                    filtered_tags)
+    filtered_tags = filter(
+        lambda x: not any(tag in x for tag in generic_filtered_tags), filtered_tags
+    )
+    filtered_tags = filter(
+        lambda x: not any(tag in x for tag in non_filtered_tags), filtered_tags
+    )
 
     # alter the tags that must be filtered for the regex
-    sub = lambda tag: re.sub(r'^([^\s.#<>]*)([.#][^\s.#<>]+)$', _filter_tag, tag)
+    sub = lambda tag: re.sub(r"^([^\s.#<>]*)([.#][^\s.#<>]+)$", _filter_tag, tag)
     generic_filtered_tags = list(map(sub, generic_filtered_tags))
     filtered_tags = list(map(sub, filtered_tags))
 
     # create regex
-    ignore_tags = list(non_filtered_tags | set(generic_filtered_tags) | set(filtered_tags))
-    ignore_regex = r'(?:<(%s)[^>]*>.*?</\1>)' % '|'.join(ignore_tags)
+    ignore_tags = list(
+        non_filtered_tags | set(generic_filtered_tags) | set(filtered_tags)
+    )
+    ignore_regex = r"(?:<(%s)[^>]*>.*?</\1>)" % "|".join(ignore_tags)
     ignore_finder = re.compile(ignore_regex, re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
     # process regex
@@ -105,9 +116,10 @@ def process_ignores(text, ignore_tags=None):
     # match the rest of the text if necessary
     # (this could in fact be the entire string)
     if position < len(text):
-        sections.append((text[position:len(text)], True))
+        sections.append((text[position : len(text)], True))
 
     return sections
+
 
 def amp(text):
     """Wraps apersands in HTML with ``<span class="amp">`` so they can be
@@ -137,14 +149,19 @@ def amp(text):
     """
     # tag_pattern from http://haacked.com/archive/2004/10/25/usingregularexpressionstomatchhtml.aspx
     # it kinda sucks but it fixes the standalone amps in attributes bug
-    tag_pattern = '</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
+    tag_pattern = r"</?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[^'\">\s]+))?)+\s*|\s*)/?>"
     amp_finder = re.compile(r"(\s|&nbsp;)(&|&amp;|&\#38;)(\s|&nbsp;)")
-    intra_tag_finder = re.compile(r'(?P<prefix>(%s)?)(?P<text>([^<]*))(?P<suffix>(%s)?)' % (tag_pattern, tag_pattern))
+    intra_tag_finder = re.compile(
+        r"(?P<prefix>(%s)?)(?P<text>([^<]*))(?P<suffix>(%s)?)"
+        % (tag_pattern, tag_pattern)
+    )
 
     def _amp_process(groups):
-        prefix = groups.group('prefix') or ''
-        text = amp_finder.sub(r"""\1<span class="amp">&amp;</span>\3""", groups.group('text'))
-        suffix = groups.group('suffix') or ''
+        prefix = groups.group("prefix") or ""
+        text = amp_finder.sub(
+            r"""\1<span class="amp">&amp;</span>\3""", groups.group("text")
+        )
+        suffix = groups.group("suffix") or ""
         return prefix + text + suffix
 
     output = intra_tag_finder.sub(_amp_process, text)
@@ -179,20 +196,25 @@ def caps(text):
     try:
         import smartypants
     except ImportError:
-        raise TypogrifyError("Error in {% caps %} filter: The Python SmartyPants library isn't installed.")
+        raise TypogrifyError(
+            "Error in {% caps %} filter: The Python SmartyPants library isn't installed."
+        )
 
     tokens = smartypants._tokenize(text)
     result = []
     in_skipped_tag = False
 
-    cap_finder = re.compile(r"""(
+    cap_finder = re.compile(
+        r"""(
                             (\b[A-Z\d]*        # Group 2: Any amount of caps and digits
                             [A-Z]\d*[A-Z]      # A cap string much at least include two caps (but they can have digits between them)
                             [A-Z\d']*\b)       # Any amount of caps and digits or dumb apostsrophes
                             | (\b[A-Z]+\.\s?   # OR: Group 3: Some caps, followed by a '.' and an optional space
                             (?:[A-Z]+\.\s?)+)  # Followed by the same thing at least once more
                             (?:\s|\b|$))
-                            """, re.VERBOSE)
+                            """,
+        re.VERBOSE,
+    )
 
     def _cap_wrapper(matchobj):
         """This is necessary to keep dotted cap strings to pick up extra spaces"""
@@ -201,10 +223,10 @@ def caps(text):
         else:
             if matchobj.group(3)[-1] == " ":
                 caps = matchobj.group(3)[:-1]
-                tail = ' '
+                tail = " "
             else:
                 caps = matchobj.group(3)
-                tail = ''
+                tail = ""
             return """<span class="caps">%s</span>%s""" % (caps, tail)
 
     # Add additional tags whose content should be
@@ -217,7 +239,7 @@ def caps(text):
             # Don't mess with tags.
             result.append(token[1])
             close_match = tags_to_skip_regex.match(token[1])
-            if close_match and close_match.group(1) == None:
+            if close_match and close_match.group(1) is None:
                 in_skipped_tag = True
             else:
                 in_skipped_tag = False
@@ -246,12 +268,15 @@ def initial_quotes(text):
     >>> initial_quotes('&#8220;With smartypanted quotes&#8221;')
     '<span class="dquo">&#8220;</span>With smartypanted quotes&#8221;'
     """
-    quote_finder = re.compile(r"""((<(p|h[1-6]|li|dt|dd)[^>]*>|^)              # start with an opening p, h1-6, li, dd, dt or the start of the string
+    quote_finder = re.compile(
+        r"""((<(p|h[1-6]|li|dt|dd)[^>]*>|^)              # start with an opening p, h1-6, li, dd, dt or the start of the string
                                   \s*                                          # optional white space!
                                   (<(a|em|span|strong|i|b)[^>]*>\s*)*)         # optional opening inline tags, with more optional white space for each.
                                   (("|&ldquo;|&\#8220;)|('|&lsquo;|&\#8216;))  # Find me a quote! (only need to find the left quotes and the primes)
                                                                                # double quotes are in group 7, singles in group 8
-                                  """, re.VERBOSE)
+                                  """,
+        re.VERBOSE,
+    )
 
     def _quote_wrapper(matchobj):
         if matchobj.group(7):
@@ -260,7 +285,12 @@ def initial_quotes(text):
         else:
             classname = "quo"
             quote = matchobj.group(8)
-        return """%s<span class="%s">%s</span>""" % (matchobj.group(1), classname, quote)
+        return """%s<span class="%s">%s</span>""" % (
+            matchobj.group(1),
+            classname,
+            quote,
+        )
+
     output = quote_finder.sub(_quote_wrapper, text)
     return output
 
@@ -274,7 +304,9 @@ def smartypants(text):
     try:
         import smartypants
     except ImportError:
-        raise TypogrifyError("Error in {% smartypants %} filter: The Python smartypants library isn't installed.")
+        raise TypogrifyError(
+            "Error in {% smartypants %} filter: The Python smartypants library isn't installed."
+        )
     else:
         output = smartypants.smartypants(text)
         return output
@@ -321,16 +353,20 @@ def widont(text):
     '<div><p>But divs with paragraphs&nbsp;do!</p></div>'
     """
 
-    widont_finder = re.compile(r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
+    widont_finder = re.compile(
+        r"""((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
                                    \s+                                             # the space to replace
                                    ([^<>\s]+                                       # must be flollowed by non-tag non-space characters
                                    \s*                                             # optional white space!
                                    (</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
                                    ((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
-                                   """, re.VERBOSE)
-    output = widont_finder.sub(r'\1&nbsp;\2', text)
+                                   """,
+        re.VERBOSE,
+    )
+    output = widont_finder.sub(r"\1&nbsp;\2", text)
 
     return output
+
 
 def applyfilters(text):
     """Applies the following filters: smartypants, caps, amp, initial_quotes
@@ -345,11 +381,12 @@ def applyfilters(text):
 
     return text
 
+
 def typogrify(text, ignore_tags=None):
     """The super typography filter
 
-        Applies filters to text that are not in tags contained in the
-        ignore_tags list.
+    Applies filters to text that are not in tags contained in the
+    ignore_tags list.
     """
 
     section_list = process_ignores(text, ignore_tags)
@@ -364,9 +401,12 @@ def typogrify(text, ignore_tags=None):
     # apply widont at the end, as its already smart about tags. Hopefully.
     return widont(rendered_text)
 
+
 def _test():
     import doctest
+
     doctest.testmod(verbose=True)
+
 
 if __name__ == "__main__":
     _test()
