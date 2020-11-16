@@ -1,9 +1,12 @@
+Typogrify |build-status| |pypi-version|
+#######################################
+
 Typogrify provides a set of custom filters that automatically apply various
 transformations to plain text in order to yield typographically-improved HTML.
 While often used in conjunction with Jinja_ and Django_ template systems, the
 filters can be used in any environment.
 
-.. _Jinja: http://jinja.pocoo.org/
+.. _Jinja: https://jinja.palletsprojects.com/
 .. _Django: https://www.djangoproject.com/
 
 
@@ -135,3 +138,11 @@ Works inside these block elements:
 
 Also accounts for potential closing inline elements: ``a``, ``em``,
 ``strong``, ``span``, ``b``, ``i``.
+
+
+.. |build-status| image:: https://img.shields.io/github/workflow/status/mintchaos/typogrify/build
+   :target: https://github.com/mintchaos/typogrify/actions
+   :alt: GitHub Actions CI: continuous integration status
+.. |pypi-version| image:: https://img.shields.io/pypi/v/typogrify.svg
+   :target: https://pypi.org/project/typogrify/
+   :alt: PyPI Version
