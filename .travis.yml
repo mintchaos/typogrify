@@ -1,9 +1,11 @@
 language: python
 python:
- - "2.6"
- - "2.7"
- - "3.3"
+ - "3.5"
+ - "3.6"
+ - "3.7"
+ - "3.8"
+ - "3.9"
 install:
  - "pip install ."
 script:
-    - "nosetests --with-doctest -I typogrify_tags.py -I jinja_filters.py"
+    - "python3 -mdoctest -v typogrify/filters.py"
