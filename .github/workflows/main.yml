@@ -17,6 +17,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip3 install .
-      - run: python3 -mdoctest -v typogrify/filters.py
-
+      - uses: dschep/install-poetry-action@v1.3
+      - run: |
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+      - run: poetry install
+      - run: pytest -v --doctest-modules typogrify/filters.py typogrify/packages/titlecase/tests.py

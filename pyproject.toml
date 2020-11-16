@@ -1,2 +1,32 @@
+[tool.poetry]
+name = "typogrify"
+version = "2.0.7"
+description = "Filters to enhance web typography, including support for Django & Jinja templates"
+authors = [ "Christian Metts <chris@tiltshiftstudio.com>",
+            "Justin Mayer",
+            "Chris Drackett",]
+license = "BSD"
+homepage="https://github.com/mintchaos/typogrify"
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Framework :: Django",
+    "Framework :: Flask",
+    "Topic :: Utilities"
+]
+
+
+[tool.poetry.dependencies]
+python = ">3.5"
+smartypants = ">=1.8.3"
+
+[tool.poetry.dev-dependencies]
+pytest = ">5.0.0"
+
 [build-system]
-requires = ["setuptools", "wheel", "smartypants"]
+requires = [ "poetry>=0.12",]
+build-backend = "poetry.masonry.api"
