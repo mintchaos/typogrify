@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: Test - ${{ matrix.config.python }}
+    name: Test - ${{ matrix.python-version }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Python ${{ matrix.config.python }}
+      - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.config.python }}
+          python-version: ${{ matrix.python-version }}
       - run: pip3 install .
       - run: python3 -mdoctest -v typogrify/filters.py
 
