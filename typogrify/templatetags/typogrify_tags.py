@@ -1,4 +1,13 @@
-from typogrify.filters import amp, caps, initial_quotes, smartypants, titlecase, typogrify, widont, TypogrifyError
+from typogrify.filters import (
+    amp,
+    caps,
+    initial_quotes,
+    smartypants,
+    titlecase,
+    typogrify,
+    widont,
+    TypogrifyError,
+)
 from functools import wraps
 from django.conf import settings
 from django import template
@@ -15,6 +24,7 @@ def make_safe(f):
     unicode support.
 
     """
+
     @wraps(f)
     def wrapper(text):
         text = force_str(text)
@@ -27,14 +37,15 @@ def make_safe(f):
                 raise e
             return text
         return mark_safe(out)
+
     wrapper.is_safe = True
     return wrapper
 
 
-register.filter('amp', make_safe(amp))
-register.filter('caps', make_safe(caps))
-register.filter('initial_quotes', make_safe(initial_quotes))
-register.filter('smartypants', make_safe(smartypants))
-register.filter('titlecase', make_safe(titlecase))
-register.filter('typogrify', make_safe(typogrify))
-register.filter('widont', make_safe(widont))
+register.filter("amp", make_safe(amp))
+register.filter("caps", make_safe(caps))
+register.filter("initial_quotes", make_safe(initial_quotes))
+register.filter("smartypants", make_safe(smartypants))
+register.filter("titlecase", make_safe(titlecase))
+register.filter("typogrify", make_safe(typogrify))
+register.filter("widont", make_safe(widont))
