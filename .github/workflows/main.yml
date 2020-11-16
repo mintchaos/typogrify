@@ -1,17 +1,22 @@
-name: Run doctests
+name: build
 
 on: [push, pull_request]
 
 jobs:
-    run_doctests:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: [3.6, 3.7, 3.8, 3.9]
+  test:
+    name: Test - ${{ matrix.config.python }}
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v1
-            - run: pip3 install .
-            - run: python3 -mdoctest -v typogrify/filters.py
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python ${{ matrix.config.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.config.python }}
+      - run: pip3 install .
+      - run: python3 -mdoctest -v typogrify/filters.py
 
