@@ -6,9 +6,12 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
 
-from titlecase import titlecase
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
+
+from . import titlecase
 
 TEST_DATA = (
     (
@@ -55,7 +58,7 @@ TEST_DATA = (
         "Starting Sub-Phrase With a Small Word: a Trick, Perhaps?",
         "Starting Sub-Phrase With a Small Word: A Trick, Perhaps?"
     ),
-    (    
+    (
         "Sub-Phrase With a Small Word in Quotes: 'a Trick, Perhaps?'",
         "Sub-Phrase With a Small Word in Quotes: 'A Trick, Perhaps?'"
     ),
@@ -69,9 +72,9 @@ TEST_DATA = (
     ),
     (
         '"Nothing to be Afraid Of?"',
-        '"Nothing to Be Afraid Of?"'    
+        '"Nothing to Be Afraid Of?"'
     ),
-    (   
+    (
         'a thing',
         'A Thing'
     ),
@@ -127,7 +130,7 @@ TEST_DATA = (
         "this shouldn't\nget mangled",
         "This Shouldn't\nGet Mangled"
     ),
-    ( 
+    (
         "this is http://foo.com",
         "This Is http://foo.com"
     )
@@ -136,39 +139,33 @@ TEST_DATA = (
 def test_all_caps_regex():
     """Test - all capitals regex"""
     from titlecase import ALL_CAPS
-    assert bool(ALL_CAPS.match('THIS IS ALL CAPS')) is True
+    assert bool(ALL_CAPS.match("THIS IS ALL CAPS")) is True
 
 def test_initials_regex():
     """Test - uppercase initals regex with A.B"""
     from titlecase import UC_INITIALS
-    assert bool(UC_INITIALS.match('A.B')) is True
+    assert bool(UC_INITIALS.match("A.B")) is True
 
 def test_initials_regex_2():
     """Test - uppercase initals regex with A.B."""
     from titlecase import UC_INITIALS
-    assert bool(UC_INITIALS.match('A.B.')) is True
+    assert bool(UC_INITIALS.match("A.B.")) is True
 
 def test_initials_regex_3():
     """Test - uppercase initals regex with ABCD"""
     from titlecase import UC_INITIALS
-    assert bool(UC_INITIALS.match('ABCD')) is False
+    assert bool(UC_INITIALS.match("ABCD")) is False
 
 def check_input_matches_expected_output(in_, out):
     """Function yielded by test generator"""
-    try :
-        assert  titlecase(in_) == out
+    try:
+        assert titlecase(in_) == out
     except AssertionError:
         print("%s != %s" % (titlecase(in_), out))
         raise
 
 
-def test_input_output():
+@pytest.mark.parametrize("data", TEST_DATA)
+def test_input_output(data):
     """Generated tests"""
-    for data in TEST_DATA:
-        yield check_input_matches_expected_output, data[0], data[1]
-       
-
-if __name__ == "__main__":
-    import nose
-    nose.main()
-
+    check_input_matches_expected_output(data[0], data[1])

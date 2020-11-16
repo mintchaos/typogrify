@@ -17,6 +17,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip3 install .
-      - run: python3 -mdoctest -v typogrify/filters.py
-
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1.1.2
+      - name: Install project and dependencies
+        run: poetry install
+      - name: Run the test suite
+        run: poetry run pytest -v --doctest-modules typogrify/filters.py typogrify/packages/titlecase/tests.py
