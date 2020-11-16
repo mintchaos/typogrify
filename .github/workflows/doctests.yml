@@ -1,0 +1,17 @@
+name: Run doctests
+
+on: [push, pull_request]
+
+jobs:
+    run_doctests:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: [3.6, 3.7, 3.8, 3.9]
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-python@v1
+            - run: pip3 install .
+            - run: python3 -mdoctest -v typogrify/filters.py
+
