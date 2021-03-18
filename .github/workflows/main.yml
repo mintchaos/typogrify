@@ -23,3 +23,20 @@ jobs:
         run: poetry install
       - name: Run the test suite
         run: poetry run pytest -v --doctest-modules typogrify/filters.py typogrify/packages/titlecase/tests.py
+
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1.1.2
+      - name: Install project and dependencies
+        run: poetry install
+      - name: Run linters
+        run: poetry run invoke lint
