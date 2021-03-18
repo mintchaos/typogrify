@@ -132,6 +132,27 @@ Also accounts for potential closing inline elements: ``a``, ``em``,
 ``strong``, ``span``, ``b``, ``i``.
 
 
+Development
+===========
+
+To set up your development environment, first clone the project. Then create
+and activate a new virtual environment. From within the project, run::
+
+    python -m pip install invoke
+    invoke setup
+
+Each time you make changes to Typogrify, there are two things to do regarding
+tests: check that the existing tests pass, and add tests for any new features
+or bug fixes. You can run the tests via::
+
+    invoke tests
+
+In addition to running the test suite, it is important to also ensure that any
+lines you changed conform to code style guidelines. You can check that via::
+
+    invoke lint
+
+
 .. |build-status| image:: https://img.shields.io/github/workflow/status/mintchaos/typogrify/build
    :target: https://github.com/mintchaos/typogrify/actions
    :alt: GitHub Actions CI: continuous integration status
