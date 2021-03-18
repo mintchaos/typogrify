@@ -1,6 +1,13 @@
 Changelog
 =========
 
+(Unreleased)
+------------
+
+- drop support for Python < 3.6
+- package via Poetry + pyproject instead of Setuptools
+- improve testing, linting, and CI tooling
+
 2.0.6 | 2.0.7
 -------------
 
