@@ -16,22 +16,14 @@ Installation
 The following command will install via ``pip``. Pay particular attention to the
 package name::
 
-    pip install typogrify
-
-Alternatively, you can run the following command inside the project's root
-directory::
-
-    python setup.py install
-
-Last but not least, you can simply move the enclosed ``typogrify`` folder
-into your Python path.
+    python -m pip install typogrify
 
 
 Requirements
 ============
 
-Python 2.3 and above is supported, including Python 3. The only dependency is
-SmartyPants_, a Python port of a project by John Gruber.
+Python 3.6 and above is supported. The only dependency is SmartyPants_,
+a Python port of a project by John Gruber.
 
 Installing Jinja_ or Django_ is only required if you intend to use the optional
 template filters that are included for those frameworks.
