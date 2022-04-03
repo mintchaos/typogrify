@@ -1,7 +1,7 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.1.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -14,3 +14,8 @@ repos:
       - id: end-of-file-fixer
       - id: forbid-new-submodules
       - id: trailing-whitespace
+
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
