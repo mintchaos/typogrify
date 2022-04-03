@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
       - uses: actions/checkout@v2
@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.1.2
+        uses: snok/install-poetry@v1.3.1
       - name: Install project and dependencies
         run: poetry install
       - name: Run the test suite
@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.1.2
+        uses: snok/install-poetry@v1.3.1
       - name: Install project and dependencies
         run: poetry install
       - name: Run linters
