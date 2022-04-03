@@ -9,7 +9,10 @@ from typogrify.filters import (
     TypogrifyError,
 )
 from functools import wraps
-import jinja2
+try:
+    from markupsafe import Markup
+except ImportError:
+    from jinja2 import Markup
 from jinja2.exceptions import TemplateError
 
 
@@ -28,7 +31,7 @@ def make_safe(f):
             out = f(text)
         except TypogrifyError as e:
             raise TemplateError(e.message)
-        return jinja2.Markup(out)
+        return Markup(out)
 
     wrapper.is_safe = True
     return wrapper
