@@ -9,6 +9,7 @@ from typogrify.filters import (
     TypogrifyError,
 )
 from functools import wraps
+
 try:
     from markupsafe import Markup
 except ImportError:
