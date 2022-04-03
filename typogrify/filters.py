@@ -3,7 +3,7 @@ from typogrify.packages.titlecase import titlecase  # NOQA
 
 
 class TypogrifyError(Exception):
-    """ A base error class so we can catch or scilence typogrify's errors in templates """
+    """A base error class so we can catch or scilence typogrify's errors in templates"""
 
     pass
 
