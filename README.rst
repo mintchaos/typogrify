@@ -65,6 +65,16 @@ change any ampersand which has already been wrapped in this fashion.
 Wraps multiple capital letters in ``<span class="caps">`` so they can
 be styled with CSS.
 
+``french insecable``
+--------------------
+
+Replace space by thin non breakable space in the following cases :
+
+* between a word and double punctuation sign (colomn, semi colomn)
+* between french quotes and the text inside them
+* between digits
+
+The locale must be set to fr_FR for being applied
 
 ``initial_quotes``
 ------------------
