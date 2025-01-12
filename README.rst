@@ -1,6 +1,8 @@
 Typogrify |build-status| |pypi-version|
 #######################################
 
+**‼️ IMPORTANT 👉** **Development has been moved to a** `maintained fork of this project <https://github.com/justinmayer/typogrify>`_. **Please file any issues and pull requests at that repository.** ‼️
+
 Typogrify provides a set of custom filters that automatically apply various
 transformations to plain text in order to yield typographically-improved HTML.
 While often used in conjunction with Jinja_ and Django_ template systems, the
